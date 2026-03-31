@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CycleCalendar } from "@/components/calendar";
 import { PhaseCard } from "@/components/phase-card";
-import { computeStats, getPhaseForDate, getCycleAlerts, type Period } from "@/lib/cycle";
+import { computeStats, getPhaseForDate, getCycleAlerts, type Period, type Phase } from "@/lib/cycle";
 
 export default function CalendarioPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [loading, setLoading] = useState(true);
+  const lastPhaseRef = useRef<Phase | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -25,6 +26,34 @@ export default function CalendarioPage() {
   const stats = computeStats(periods);
   const today = new Date().toISOString().split("T")[0];
   const phaseInfo = getPhaseForDate(today, periods, stats);
+
+  // Detect phase changes and notify partner
+  useEffect(() => {
+    if (loading || periods.length === 0) return;
+
+    const currentPhase = phaseInfo.phase;
+
+    // Skip initial load — only fire on actual changes
+    if (lastPhaseRef.current === null) {
+      lastPhaseRef.current = currentPhase;
+      return;
+    }
+
+    if (currentPhase !== lastPhaseRef.current) {
+      lastPhaseRef.current = currentPhase;
+
+      // Fire partner notification
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        fetch("/api/notify-partner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, phase: currentPhase }),
+        }).catch((err) => console.error("Partner notify failed:", err));
+      });
+    }
+  }, [phaseInfo.phase, loading, periods.length]);
 
   if (loading) {
     return (
