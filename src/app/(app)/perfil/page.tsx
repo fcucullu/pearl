@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Mail, LogOut, BarChart3, Bell } from "lucide-react";
+import { Mail, LogOut, BarChart3, Bell, MessageCircle } from "lucide-react";
 import type { Period } from "@/lib/cycle";
 import { computeStats } from "@/lib/cycle";
 
@@ -161,6 +161,17 @@ export default function PerfilPage() {
           </button>
         </div>
       </div>
+
+      {/* Chat with Fran */}
+      <a
+        href="https://wa.me/34644941706?text=Hey%20Fran!%20%F0%9F%91%8B%20I'm%20using%20Pearl%20and%20wanted%20to%20tell%20you..."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-2xl py-3.5 text-sm font-medium text-foreground hover:border-pearl/30 transition-colors mb-4"
+      >
+        <MessageCircle className="w-4 h-4 text-pearl" />
+        Chat with Fran 💬
+      </a>
 
       {/* Logout */}
       <button
