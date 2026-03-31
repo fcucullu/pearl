@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { getPartnerRecommendation, getPhaseName, getPhaseEmoji, type Phase } from "@/lib/cycle";
+import { getPartnerRecommendation, getPhaseName, getPhaseEmoji, getPhaseColor, computeStats, getPhaseForDate, type Phase, type Period } from "@/lib/cycle";
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -36,8 +36,29 @@ export async function POST(req: NextRequest) {
     const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || "Your partner";
     const userName = fullName.split(" ")[0];
 
+    // Fetch user's periods to calculate phase dates
+    const { data: periodsData } = await supabase
+      .from("pearl_periods")
+      .select("id, start_date, end_date")
+      .eq("user_id", user_id)
+      .order("start_date", { ascending: true });
+    const periods = (periodsData ?? []) as Period[];
+    const stats = computeStats(periods);
+    const today = new Date().toISOString().split("T")[0];
+    const phaseInfo = getPhaseForDate(today, periods, stats);
+
+    // Calculate phase date range
+    const phaseStartDate = new Date();
+    phaseStartDate.setDate(phaseStartDate.getDate() - (phaseInfo.dayInPhase - 1));
+    const phaseEndDate = new Date(phaseStartDate);
+    phaseEndDate.setDate(phaseEndDate.getDate() + phaseInfo.totalDaysInPhase - 1);
+
+    const formatDate = (d: Date) => d.toLocaleDateString("en", { month: "short", day: "numeric" });
+    const dateRange = `${formatDate(phaseStartDate)} – ${formatDate(phaseEndDate)}`;
+
     const phaseName = getPhaseName(phase);
     const emoji = getPhaseEmoji(phase);
+    const color = getPhaseColor(phase);
     const recommendation = getPartnerRecommendation(phase, userName);
 
     const { error } = await resend.emails.send({
@@ -53,8 +74,11 @@ export async function POST(req: NextRequest) {
             Hi there,
           </p>
           <div style="background: white; border-radius: 12px; padding: 20px; margin: 0 0 20px 0; border: 1px solid #F0E0E0;">
-            <p style="font-size: 20px; font-weight: 600; margin: 0 0 12px 0; color: #333;">
+            <p style="font-size: 20px; font-weight: 600; margin: 0 0 8px 0; color: #333;">
               ${emoji} ${userName} — ${phaseName} Phase
+            </p>
+            <p style="font-size: 13px; font-weight: 500; margin: 0 0 14px 0; color: ${color};">
+              ${dateRange} (${phaseInfo.totalDaysInPhase} days)
             </p>
             <p style="color: #555; font-size: 14px; line-height: 1.7; margin: 0;">
               ${recommendation}
