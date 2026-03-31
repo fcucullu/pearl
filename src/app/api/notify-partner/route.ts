@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
 
     // Get user's name from auth
     const { data: { user } } = await supabase.auth.admin.getUserById(user_id);
-    const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || "Your partner";
+    const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || "Your partner";
+    const userName = fullName.split(" ")[0];
 
     const phaseName = getPhaseName(phase);
     const emoji = getPhaseEmoji(phase);
