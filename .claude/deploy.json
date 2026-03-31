@@ -1,0 +1,15 @@
+{
+  "github_repo": "fcucullu/pearl",
+  "supabase_project_ref": "ytgyumihoeiwuyxbptjj",
+  "supabase_url": "https://ytgyumihoeiwuyxbptjj.supabase.co",
+  "vercel_project_name": "pearl",
+  "subdomain": "pearl",
+  "domain": "franciscocucullu.com",
+  "vapid_public_key": "BOhGYmlkR985VeEk_Unsz7yaAQqVR8-rNyA0pTBMkGsDwzgMlD3MZmfs4rR4BdW0y5YFIQnIUzp2YzvuZ3Tmog0",
+  "vapid_private_key": "T_FJxRvCvtah-bsJtpb1JClsUsk2cO_YFdBNem3R_8A",
+  "portfolio_title": "Pearl",
+  "portfolio_description": "Period & cycle tracker. Log periods, see predicted phases on a color-coded calendar, get daily recommendations, and notify your partner when phases change.",
+  "portfolio_body": "Pearl is a period and cycle tracker that learns your unique rhythm. Log your periods and Pearl predicts your cycle, showing four phases (menstrual, follicular, ovulation, luteal) on a beautiful color-coded calendar. Each phase comes with personalized recommendations on how you might feel and what to do. Optionally track daily symptoms like mood, energy, and pain. Set up partner notifications to automatically email your partner with tips on how to support you when you enter a new phase.",
+  "portfolio_tags": ["Next.js", "Supabase", "PWA", "TypeScript"],
+  "portfolio_img": "/assets/stock-1.jpg"
+}
