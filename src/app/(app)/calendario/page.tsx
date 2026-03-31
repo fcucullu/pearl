@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CycleCalendar } from "@/components/calendar";
 import { PhaseCard } from "@/components/phase-card";
+import { Onboarding } from "@/components/onboarding";
 import { computeStats, getPhaseForDate, getCycleAlerts, type Period, type Phase } from "@/lib/cycle";
 
 export default function CalendarioPage() {
@@ -65,19 +66,17 @@ export default function CalendarioPage() {
 
   if (periods.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="text-6xl mb-4">🐚</div>
-        <h1 className="text-2xl font-bold mb-2">Welcome to Pearl</h1>
-        <p className="text-muted text-sm mb-6 max-w-xs mx-auto">
-          Start by logging your last period in the Track tab to see your cycle predictions.
-        </p>
-        <a
-          href="/track"
-          className="inline-flex items-center gap-2 bg-pearl text-white px-6 py-3 rounded-xl font-medium text-sm hover:bg-pearl-light transition-colors"
-        >
-          Log Your First Period
-        </a>
-      </div>
+      <Onboarding
+        onComplete={() => {
+          // Reload periods after onboarding
+          const supabase = createClient();
+          supabase
+            .from("pearl_periods")
+            .select("id, start_date, end_date")
+            .order("start_date", { ascending: true })
+            .then(({ data }) => setPeriods(data ?? []));
+        }}
+      />
     );
   }
 
