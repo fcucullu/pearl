@@ -141,14 +141,13 @@ export default function PerfilPage() {
             <span className="text-xs text-muted">Enable notifications</span>
             <button
               onClick={() => setPartnerEnabled(!partnerEnabled)}
-              className={`w-11 h-6 rounded-full transition-colors relative ${
-                partnerEnabled ? "bg-pearl" : "bg-border"
+              className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${
+                partnerEnabled ? "bg-pearl" : "bg-gray-300"
               }`}
             >
               <span
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                  partnerEnabled ? "translate-x-5" : "translate-x-0.5"
-                }`}
+                className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                style={{ transform: partnerEnabled ? "translateX(20px)" : "translateX(0)" }}
               />
             </button>
           </div>
