@@ -70,9 +70,6 @@ export async function POST(req: NextRequest) {
           <h2 style="text-align: center; color: #D4A0A0; margin: 0 0 24px 0; font-size: 24px;">
             Pearl
           </h2>
-          <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
-            Hi there,
-          </p>
           <div style="background: white; border-radius: 12px; padding: 20px; margin: 0 0 20px 0; border: 1px solid #F0E0E0;">
             <p style="font-size: 20px; font-weight: 600; margin: 0 0 8px 0; color: #333;">
               ${emoji} ${userName} — ${phaseName} Phase
