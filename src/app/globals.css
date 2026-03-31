@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #FFF9F5;
+  --color-foreground: #1a1a2e;
+  --color-surface: #FFFFFF;
+  --color-border: #F0E6E0;
+  --color-pearl: #D4A0A0;
+  --color-pearl-light: #F0C4C4;
+  --color-muted: #8E8E93;
+  --color-menstrual: #E84057;
+  --color-follicular: #60B5A0;
+  --color-ovulation: #A78BFA;
+  --color-luteal: #F5A623;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
