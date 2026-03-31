@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Heart, Pencil, Check, X, CircleDot, CircleStop, Clock } from "lucide-react";
+import { Plus, Heart, Pencil, Check, X, CircleDot, CircleStop } from "lucide-react";
 import type { Period } from "@/lib/cycle";
 
 const MOODS = ["happy", "sensitive", "irritable", "anxious", "calm"] as const;
@@ -226,58 +226,57 @@ export default function TrackPage() {
             )}
           </div>
 
-          {/* Add past period */}
-          <div className="mb-4">
-            {!showAddPast ? (
-              <button
-                onClick={() => setShowAddPast(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-muted hover:text-pearl transition-colors border border-dashed border-border rounded-xl"
-              >
-                <Clock className="w-4 h-4" />
-                Log a past period
-              </button>
-            ) : (
-              <div className="bg-surface rounded-2xl p-5 border border-border">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-sm">Log Past Period</h2>
-                  <button onClick={() => setShowAddPast(false)} className="p-1 text-muted hover:text-foreground">
-                    <X className="w-4 h-4" />
-                  </button>
+          {/* Period history */}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-sm">History</h2>
+            <button
+              onClick={() => setShowAddPast(!showAddPast)}
+              className="flex items-center gap-1 text-xs text-muted hover:text-pearl transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add past
+            </button>
+          </div>
+
+          {showAddPast && (
+            <div className="bg-surface rounded-2xl p-5 border border-border mb-3">
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted block mb-1">Start date</label>
+                  <input
+                    type="date"
+                    value={pastStart}
+                    onChange={(e) => setPastStart(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+                  />
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-muted block mb-1">Start date</label>
-                    <input
-                      type="date"
-                      value={pastStart}
-                      onChange={(e) => setPastStart(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted block mb-1">End date</label>
-                    <input
-                      type="date"
-                      value={pastEnd}
-                      onChange={(e) => setPastEnd(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-                    />
-                  </div>
+                <div>
+                  <label className="text-xs text-muted block mb-1">End date</label>
+                  <input
+                    type="date"
+                    value={pastEnd}
+                    onChange={(e) => setPastEnd(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
                   <button
                     onClick={addPastPeriod}
                     disabled={!pastStart || saving}
-                    className="w-full bg-pearl text-white py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-pearl-light transition-colors"
+                    className="flex-1 bg-pearl text-white py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-pearl-light transition-colors"
                   >
-                    <Plus className="w-4 h-4" />
-                    {saving ? "Saving..." : "Add Period"}
+                    {saving ? "Saving..." : "Add"}
+                  </button>
+                  <button
+                    onClick={() => setShowAddPast(false)}
+                    className="px-4 bg-background border border-border text-muted py-2.5 rounded-xl text-sm font-medium"
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Period history */}
-          <h2 className="font-semibold text-sm mb-3">History</h2>
+            </div>
+          )}
           {periods.length === 0 ? (
             <p className="text-sm text-muted text-center py-8">No periods logged yet</p>
           ) : (

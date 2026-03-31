@@ -70,12 +70,6 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           <ArrowRight className="w-4 h-4" />
         </button>
 
-        <button
-          onClick={onComplete}
-          className="block mx-auto mt-4 text-xs text-muted hover:text-pearl transition-colors"
-        >
-          Skip for now
-        </button>
       </div>
     );
   }
@@ -149,10 +143,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
       {/* Continue */}
       <button
         onClick={finish}
-        disabled={saving}
+        disabled={saving || periods.length === 0}
         className="w-full bg-pearl text-white py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-pearl-light transition-colors mb-3"
       >
-        {saving ? "Saving..." : periods.length > 0 ? "Save & Continue" : "Continue Without Data"}
+        {saving ? "Saving..." : "Save & Continue"}
         <ArrowRight className="w-4 h-4" />
       </button>
 
