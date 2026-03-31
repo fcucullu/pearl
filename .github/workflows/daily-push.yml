@@ -1,0 +1,20 @@
+name: Daily Push Notification
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send push notifications
+        run: |
+          RESPONSE=$(curl -s -w "
+%{http_code}" -X POST "https://pearl.franciscocucullu.com/api/push/notify")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+          echo "Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then exit 1; fi
