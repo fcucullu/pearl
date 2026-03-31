@@ -232,16 +232,16 @@ export function getPhaseRecommendation(phase: Phase): PhaseRecommendation {
   }
 }
 
-export function getPartnerRecommendation(phase: Phase): string {
+export function getPartnerRecommendation(phase: Phase, name = "She"): string {
   switch (phase) {
     case "menstrual":
-      return "She's in her menstrual phase. She may feel more tired and need extra comfort. Be patient, offer to help with tasks, bring her tea or a heat pad, and don't take it personally if she needs alone time.";
+      return `${name} is in the menstrual phase. ${name} may feel more tired and need extra comfort. Be patient, offer to help with tasks, bring tea or a heat pad, and don't take it personally if ${name.toLowerCase() === "she" ? "she" : "they"} need${name.toLowerCase() === "she" ? "s" : ""} alone time.`;
     case "follicular":
-      return "She's in her follicular phase — energy is rising! She'll likely be more social and adventurous. Great time to plan fun activities together, try a new restaurant, or go on a date.";
+      return `${name} is in the follicular phase — energy is rising! ${name} will likely be more social and adventurous. Great time to plan fun activities together, try a new restaurant, or go on a date.`;
     case "ovulation":
-      return "She's ovulating — peak energy and confidence! She'll be communicative and social. Enjoy quality time together, have meaningful conversations, and appreciate her natural glow.";
+      return `${name} is ovulating — peak energy and confidence! ${name} will be communicative and social. Enjoy quality time together, have meaningful conversations, and appreciate the natural glow.`;
     case "luteal":
-      return "She's in her luteal phase. She may experience mood swings or PMS symptoms toward the end. Be extra supportive, avoid unnecessary conflicts, offer comfort food, and give her space when needed.";
+      return `${name} is in the luteal phase. ${name} may experience mood swings or PMS symptoms toward the end. Be extra supportive, avoid unnecessary conflicts, offer comfort food, and give space when needed.`;
   }
 }
 

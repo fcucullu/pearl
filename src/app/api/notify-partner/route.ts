@@ -31,14 +31,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ skipped: true, reason: "No partner email or notifications disabled" });
     }
 
+    // Get user's name from auth
+    const { data: { user } } = await supabase.auth.admin.getUserById(user_id);
+    const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || "Your partner";
+
     const phaseName = getPhaseName(phase);
     const emoji = getPhaseEmoji(phase);
-    const recommendation = getPartnerRecommendation(phase);
+    const recommendation = getPartnerRecommendation(phase, userName);
 
     const { error } = await resend.emails.send({
       from: "Pearl <pearl@franciscocucullu.com>",
       to: partner.partner_email,
-      subject: `Phase Update: ${phaseName} Phase`,
+      subject: `${userName} — ${phaseName} Phase`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #FFF9F9; border-radius: 16px;">
           <h2 style="text-align: center; color: #D4A0A0; margin: 0 0 24px 0; font-size: 24px;">
@@ -49,7 +53,7 @@ export async function POST(req: NextRequest) {
           </p>
           <div style="background: white; border-radius: 12px; padding: 20px; margin: 0 0 20px 0; border: 1px solid #F0E0E0;">
             <p style="font-size: 20px; font-weight: 600; margin: 0 0 12px 0; color: #333;">
-              ${emoji} ${phaseName} Phase
+              ${emoji} ${userName} — ${phaseName} Phase
             </p>
             <p style="color: #555; font-size: 14px; line-height: 1.7; margin: 0;">
               ${recommendation}
