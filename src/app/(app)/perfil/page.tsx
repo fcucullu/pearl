@@ -170,7 +170,7 @@ export default function PerfilPage() {
         className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-2xl py-3.5 text-sm font-medium text-foreground hover:border-pearl/30 transition-colors mb-4"
       >
         <MessageCircle className="w-4 h-4 text-pearl" />
-        Chat with Fran 💬
+        Feedback? Chat with Fran 💬
       </a>
 
       {/* Logout */}
