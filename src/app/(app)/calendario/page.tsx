@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CycleCalendar } from "@/components/calendar";
 import { PhaseCard } from "@/components/phase-card";
 import { Onboarding } from "@/components/onboarding";
+import { InstallPrompt } from "@/components/install-prompt";
 import { computeStats, getPhaseForDate, getCycleAlerts, type Period, type Phase } from "@/lib/cycle";
 
 export default function CalendarioPage() {
@@ -86,6 +87,8 @@ export default function CalendarioPage() {
         <h1 className="text-2xl font-bold">Pearl</h1>
         <p className="text-xs text-muted">Your cycle, your rhythm</p>
       </div>
+
+      <InstallPrompt />
 
       {/* Cycle alerts */}
       {getCycleAlerts(periods, stats).map((alert, i) => (
