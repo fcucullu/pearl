@@ -35,6 +35,7 @@ function isIOS(): boolean {
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [iosExpanded, setIosExpanded] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -81,9 +82,33 @@ export function InstallPrompt() {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold mb-0.5">Install Pearl</p>
         {showIOSGuide ? (
-          <p className="text-xs text-muted leading-relaxed">
-            Tap <Share className="w-3 h-3 inline -mt-0.5" /> <span className="font-medium">Share</span> then <span className="font-medium">"Add to Home Screen"</span>
-          </p>
+          iosExpanded ? (
+            <div className="space-y-3 mt-1">
+              <div className="flex items-start gap-2">
+                <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">1</span>
+                <p className="text-xs text-muted">Tap the <Share className="w-3.5 h-3.5 inline -mt-0.5 text-foreground" /> <span className="font-medium text-foreground">Share</span> button at the bottom of Safari</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">2</span>
+                <p className="text-xs text-muted">Scroll down and tap <span className="font-medium text-foreground">"Add to Home Screen"</span></p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">3</span>
+                <p className="text-xs text-muted">Tap <span className="font-medium text-foreground">"Add"</span> in the top right corner</p>
+              </div>
+              <p className="text-[10px] text-muted">Pearl will appear on your home screen like a regular app!</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-muted mb-2">Add to your home screen for the best experience</p>
+              <button
+                onClick={() => setIosExpanded(true)}
+                className="bg-pearl text-white text-xs font-medium px-4 py-1.5 rounded-lg hover:bg-pearl-light transition-colors"
+              >
+                Show me how
+              </button>
+            </>
+          )
         ) : (
           <>
             <p className="text-xs text-muted mb-2">Add to your home screen for the best experience</p>
