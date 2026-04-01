@@ -86,7 +86,7 @@ export function InstallPrompt() {
             <div className="space-y-3 mt-1">
               <div className="flex items-start gap-2">
                 <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">1</span>
-                <p className="text-xs text-muted">Tap the <Share className="w-3.5 h-3.5 inline -mt-0.5 text-foreground" /> <span className="font-medium text-foreground">Share</span> button at the bottom of Safari</p>
+                <p className="text-xs text-muted">Tap the <Share className="w-3.5 h-3.5 inline -mt-0.5 text-foreground" /> <span className="font-medium text-foreground">Share</span> button in Safari</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">2</span>
@@ -94,7 +94,7 @@ export function InstallPrompt() {
               </div>
               <div className="flex items-start gap-2">
                 <span className="bg-pearl text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5">3</span>
-                <p className="text-xs text-muted">Tap <span className="font-medium text-foreground">"Add"</span> in the top right corner</p>
+                <p className="text-xs text-muted">Tap <span className="font-medium text-foreground">"Add"</span> to confirm</p>
               </div>
               <p className="text-[10px] text-muted">Pearl will appear on your home screen like a regular app!</p>
             </div>
