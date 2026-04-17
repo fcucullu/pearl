@@ -165,27 +165,8 @@ export default function TrackPage() {
     <div>
       <h1 className="text-2xl font-bold mb-4">Track</h1>
 
-      {/* Tab switcher */}
-      <div className="flex bg-surface rounded-xl border border-border p-1 mb-6">
-        <button
-          onClick={() => setTab("period")}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === "period" ? "bg-pearl text-white" : "text-muted"
-          }`}
-        >
-          Period
-        </button>
-        <button
-          onClick={() => setTab("symptoms")}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === "symptoms" ? "bg-pearl text-white" : "text-muted"
-          }`}
-        >
-          Symptoms
-        </button>
-      </div>
-
-      {tab === "period" && (
+      {/* Period tracking */}
+      <div>
         <>
           {/* Current period — big action button */}
           <div className="bg-surface rounded-2xl p-6 border border-border mb-4 text-center">
@@ -357,131 +338,7 @@ export default function TrackPage() {
             </div>
           )}
         </>
-      )}
-
-      {tab === "symptoms" && (
-        <div className="bg-surface rounded-2xl p-5 border border-border">
-          <div className="mb-4">
-            <label className="text-xs text-muted block mb-1">Date</label>
-            <input
-              type="date"
-              value={symptomDate}
-              onChange={(e) => setSymptomDate(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-
-          {/* Mood */}
-          <div className="mb-4">
-            <label className="text-xs text-muted block mb-2">Mood</label>
-            <div className="flex flex-wrap gap-2">
-              {MOODS.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMood(mood === m ? "" : m)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    mood === m
-                      ? "bg-pearl text-white border-pearl"
-                      : "bg-background border-border text-muted"
-                  }`}
-                >
-                  {MOOD_EMOJI[m]} {m}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Energy */}
-          <div className="mb-4">
-            <label className="text-xs text-muted block mb-2">Energy</label>
-            <div className="flex flex-wrap gap-2">
-              {ENERGY.map((e) => (
-                <button
-                  key={e}
-                  onClick={() => setEnergy(energy === e ? "" : e)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    energy === e
-                      ? "bg-pearl text-white border-pearl"
-                      : "bg-background border-border text-muted"
-                  }`}
-                >
-                  {ENERGY_EMOJI[e]} {e}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Pain */}
-          <div className="mb-4">
-            <label className="text-xs text-muted block mb-2">Pain level</label>
-            <div className="flex flex-wrap gap-2">
-              {PAIN_LEVELS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPainLevel(painLevel === p ? "" : p)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    painLevel === p
-                      ? "bg-menstrual text-white border-menstrual"
-                      : "bg-background border-border text-muted"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {painLevel && painLevel !== "none" && (
-            <div className="mb-4">
-              <label className="text-xs text-muted block mb-2">Pain location</label>
-              <div className="flex flex-wrap gap-2">
-                {PAIN_LOCATIONS.map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => toggleArrayItem(painLocation, l, setPainLocation)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      painLocation.includes(l)
-                        ? "bg-menstrual text-white border-menstrual"
-                        : "bg-background border-border text-muted"
-                    }`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Other */}
-          <div className="mb-5">
-            <label className="text-xs text-muted block mb-2">Other symptoms</label>
-            <div className="flex flex-wrap gap-2">
-              {OTHER_SYMPTOMS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => toggleArrayItem(otherSymptoms, s, setOtherSymptoms)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    otherSymptoms.includes(s)
-                      ? "bg-luteal text-white border-luteal"
-                      : "bg-background border-border text-muted"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={saveSymptoms}
-            disabled={saving}
-            className="w-full bg-pearl text-white py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-pearl-light transition-colors"
-          >
-            <Heart className="w-4 h-4" />
-            {symptomSaved ? "Saved!" : saving ? "Saving..." : "Save Symptoms"}
-          </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
