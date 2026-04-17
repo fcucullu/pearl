@@ -9,11 +9,13 @@ import { InstallPrompt } from "@/components/install-prompt";
 import { computeStats, getPhaseForDate, getCycleAlerts, type Period } from "@/lib/cycle";
 import { HormoneChart } from "@/components/hormone-chart";
 import { DailyInsight } from "@/components/daily-insight";
+import { useTTCMode } from "@/lib/ttc";
 
 export default function CalendarioPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [ttcMode] = useTTCMode();
 
   useEffect(() => {
     const supabase = createClient();
@@ -81,9 +83,9 @@ export default function CalendarioPage() {
 
       <CycleCalendar periods={periods} stats={stats} onSelectDate={(date) => setSelectedDate(date)} />
 
-      <DailyInsight periods={periods} stats={stats} date={selectedDate} />
+      <DailyInsight periods={periods} stats={stats} date={selectedDate} ttcMode={ttcMode} />
 
-      <HormoneChart periods={periods} stats={stats} selectedDate={selectedDate} />
+      <HormoneChart periods={periods} stats={stats} selectedDate={selectedDate} ttcMode={ttcMode} />
     </div>
   );
 }

@@ -74,9 +74,10 @@ interface HormoneChartProps {
   periods: Period[];
   stats: CycleStats;
   selectedDate?: string | null;
+  ttcMode?: boolean;
 }
 
-export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps) {
+export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneChartProps) {
   const [selectedHormone, setSelectedHormone] = useState<string | null>(null);
   const cycleLength = stats.avgCycleLength || 28;
 
@@ -199,6 +200,30 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
         <rect x={dayToX(periodEnd)} y={padTop} width={dayToX(follicularEnd) - dayToX(periodEnd)} height={chartH} fill={phaseColors.follicular} />
         <rect x={dayToX(follicularEnd)} y={padTop} width={dayToX(ovulationEnd) - dayToX(follicularEnd)} height={chartH} fill={phaseColors.ovulation} />
         <rect x={dayToX(ovulationEnd)} y={padTop} width={dayToX(cycleLength - 1) - dayToX(ovulationEnd)} height={chartH} fill={phaseColors.luteal} />
+
+        {/* Fertile window highlight (TTC mode) */}
+        {ttcMode && (() => {
+          const ovDay = Math.round(cycleLength * 0.5);
+          const fertileStart = Math.max(0, ovDay - 2);
+          const fertileEnd = Math.min(cycleLength - 1, ovDay + 2);
+          const x1 = dayToX(fertileStart);
+          const x2 = dayToX(fertileEnd);
+          return (
+            <>
+              <rect x={x1} y={padTop} width={x2 - x1} height={chartH} fill="rgba(236,72,153,0.13)" rx="4" />
+              <text
+                x={(x1 + x2) / 2}
+                y={padTop + 12}
+                textAnchor="middle"
+                fontSize="8"
+                fill="#db2777"
+                fontWeight="600"
+              >
+                Fertile window
+              </text>
+            </>
+          );
+        })()}
 
         {/* Hormone curves */}
         {hormones.map((h) => (

@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Mail, LogOut, BarChart3, Bell, MessageCircle } from "lucide-react";
+import { Mail, LogOut, BarChart3, Bell, FileDown, Baby } from "lucide-react";
 import type { Period } from "@/lib/cycle";
 import { computeStats } from "@/lib/cycle";
+import { useTTCMode } from "@/lib/ttc";
 
 export default function PerfilPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,9 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [periods, setPeriods] = useState<Period[]>([]);
+  const [userName, setUserName] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [ttcMode, setTtcMode] = useTTCMode();
   const router = useRouter();
   const supabase = createClient();
 
@@ -25,6 +29,7 @@ export default function PerfilPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setEmail(user.email ?? "");
+    setUserName(user.user_metadata?.full_name || user.user_metadata?.name || "");
 
     // Load partner notification settings
     const { data: notif } = await supabase
@@ -62,6 +67,119 @@ export default function PerfilPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function exportPDF() {
+    setExporting(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const now = new Date();
+
+      // Header band
+      doc.setFillColor(233, 30, 142); // pearl pink
+      doc.rect(0, 0, pageW, 32, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("Pearl \u2014 Menstrual Cycle Report", pageW / 2, 16, { align: "center" });
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Generated ${now.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, pageW / 2, 24, { align: "center" });
+
+      // Patient info
+      let y = 42;
+      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("Patient Information", 14, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      if (userName) { doc.text(`Name: ${userName}`, 14, y); y += 6; }
+      doc.text(`Email: ${email}`, 14, y); y += 6;
+      doc.text(`Date generated: ${now.toLocaleDateString("en-US")}`, 14, y);
+      y += 12;
+
+      // Summary stats
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Cycle Statistics", 14, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Average cycle length: ${stats.avgCycleLength} days`, 14, y); y += 6;
+      doc.text(`Average period duration: ${stats.avgPeriodDuration} days`, 14, y); y += 6;
+      doc.text(`Cycles logged: ${stats.cycleCount}`, 14, y);
+      y += 14;
+
+      // Period history table
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Period History", 14, y);
+      y += 8;
+
+      // Table header
+      const colX = [14, 54, 94, 130, 166];
+      const headers = ["#", "Start Date", "End Date", "Duration", "Cycle Length"];
+      doc.setFillColor(248, 230, 238);
+      doc.rect(12, y - 5, pageW - 24, 8, "F");
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 40, 80);
+      headers.forEach((h, i) => doc.text(h, colX[i], y));
+      y += 7;
+
+      // Table rows
+      const sorted = [...periods].sort((a, b) => a.start_date.localeCompare(b.start_date));
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+
+      sorted.forEach((p, idx) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+
+        // Alternating row background
+        if (idx % 2 === 0) {
+          doc.setFillColor(250, 245, 248);
+          doc.rect(12, y - 4, pageW - 24, 7, "F");
+        }
+
+        const duration = p.end_date
+          ? Math.round((new Date(p.end_date).getTime() - new Date(p.start_date).getTime()) / 86400000) + 1
+          : "-";
+
+        let cycleLen = "-";
+        if (idx < sorted.length - 1) {
+          const nextStart = sorted[idx + 1].start_date;
+          cycleLen = String(Math.round((new Date(nextStart).getTime() - new Date(p.start_date).getTime()) / 86400000));
+        }
+
+        doc.setFontSize(9);
+        doc.text(String(idx + 1), colX[0], y);
+        doc.text(p.start_date, colX[1], y);
+        doc.text(p.end_date ?? "Ongoing", colX[2], y);
+        doc.text(String(duration), colX[3], y);
+        doc.text(cycleLen, colX[4], y);
+        y += 7;
+      });
+
+      // Footer
+      y = Math.max(y + 10, 275);
+      if (y > 285) { doc.addPage(); y = 270; }
+      doc.setFontSize(8);
+      doc.setTextColor(160, 160, 160);
+      doc.text("Generated by Pearl \u00b7 pearl.franciscocucullu.com", pageW / 2, 290, { align: "center" });
+
+      doc.save(`pearl-cycle-report-${now.toISOString().split("T")[0]}.pdf`);
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function handleLogout() {
@@ -110,6 +228,43 @@ export default function PerfilPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TTC Mode */}
+      <div className="bg-surface rounded-2xl p-5 border border-border mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Baby className="w-4 h-4 text-pearl" />
+          <h2 className="font-semibold text-sm">Trying to Conceive</h2>
+        </div>
+        <p className="text-xs text-muted mb-3">
+          Enable to get fertility-focused insights, tips, and a highlighted fertile window on your hormone chart.
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted">I'm trying to conceive</span>
+          <button
+            onClick={() => setTtcMode(!ttcMode)}
+            className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${
+              ttcMode ? "bg-pearl" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform"
+              style={{ transform: ttcMode ? "translateX(20px)" : "translateX(0)" }}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Export for Doctor */}
+      {periods.length > 0 && (
+        <button
+          onClick={exportPDF}
+          disabled={exporting}
+          className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-2xl py-3.5 text-sm font-medium text-foreground hover:border-pearl/30 transition-colors mb-4 disabled:opacity-50"
+        >
+          <FileDown className="w-4 h-4 text-pearl" />
+          {exporting ? "Generating..." : "Export for Doctor"}
+        </button>
       )}
 
       {/* Partner notifications */}

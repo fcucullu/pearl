@@ -7,6 +7,7 @@ interface DailyInsightProps {
   periods: Period[];
   stats: CycleStats;
   date?: string | null; // YYYY-MM-DD, defaults to today
+  ttcMode?: boolean;
 }
 
 interface HormoneLevel {
@@ -164,6 +165,88 @@ function getInsightForDay(
   };
 }
 
+function getTTCInsightForDay(
+  day: number,
+  cycleLength: number,
+  phase: Phase,
+): { title: string; body: string; tips: string[] } {
+  const periodEnd = Math.round((cycleLength * 5) / 28);
+  const ovulationDay = Math.round(cycleLength * 0.5);
+
+  if (phase === "menstrual") {
+    if (day <= 2) {
+      return {
+        title: "Cycle reset — preparing for a new opportunity",
+        body: "A new cycle begins, which means a new chance. Your body is clearing the uterine lining and getting ready to build a fresh, nutrient-rich environment. Rest well — this foundation matters.",
+        tips: ["Take folic acid and prenatal vitamins daily", "Stay hydrated and eat iron-rich foods", "Rest is productive — your body is preparing"],
+      };
+    }
+    return {
+      title: "Building the foundation",
+      body: "Your period is winding down and your body is already beginning to prepare for the next ovulation. Estrogen will start rising soon, stimulating follicle growth.",
+      tips: ["Continue prenatal vitamins", "Gentle movement supports blood flow to the uterus", "Eat leafy greens and lean protein"],
+    };
+  }
+
+  if (phase === "follicular") {
+    if (day <= periodEnd + 3) {
+      return {
+        title: "Your body is preparing the next egg",
+        body: "FSH is stimulating your ovaries to develop follicles. One will become the dominant egg. Estrogen is rising, thickening the uterine lining to create the perfect environment for implantation.",
+        tips: ["Eat antioxidant-rich foods (berries, nuts)", "Stay active — moderate exercise supports fertility", "Track cervical mucus changes"],
+      };
+    }
+    return {
+      title: "Fertility is building — estrogen is creating the perfect environment",
+      body: "Estrogen continues to climb, building a thick, receptive uterine lining. Your cervical mucus may become more watery and clear. The dominant follicle is maturing rapidly.",
+      tips: ["Watch for egg-white cervical mucus — fertility is near", "Consider starting ovulation test strips", "Keep stress low — cortisol can delay ovulation"],
+    };
+  }
+
+  if (phase === "ovulation") {
+    if (day === ovulationDay) {
+      return {
+        title: "Peak fertility! This is the best time to try",
+        body: "LH has surged and the egg is being released. This is your most fertile moment — the egg lives for 12-24 hours, but sperm can survive up to 5 days. Today and tomorrow are your best window.",
+        tips: ["Have intercourse today or tomorrow", "Use ovulation tests to confirm the LH surge", "Stay relaxed — stress can affect conception"],
+      };
+    }
+    return {
+      title: "High fertility window",
+      body: "You're in or very near ovulation. Estrogen and LH are elevated. The egg may be released any moment. This is prime time for conception — sperm that arrive now can be waiting when the egg is released.",
+      tips: ["Have intercourse today or tomorrow", "Lie down for 10-15 minutes afterwards", "Avoid lubricants that may hinder sperm motility"],
+    };
+  }
+
+  // Luteal phase — TTC-specific
+  if (day <= ovulationDay + 4) {
+    return {
+      title: "The TWW begins — the egg may be fertilizing",
+      body: "The two-week wait has started. If the egg was fertilized, it's now traveling down the fallopian tube. Progesterone is rising to maintain the uterine lining and support a potential pregnancy.",
+      tips: ["Avoid alcohol and heavy exercise", "Start folic acid if not already", "Stay hydrated and eat whole foods"],
+    };
+  }
+  if (day <= ovulationDay + 8) {
+    return {
+      title: "Implantation window — take it easy",
+      body: "Around days 6-10 after ovulation, a fertilized egg may implant into the uterine lining. Some people experience light spotting (implantation bleeding) or mild cramping. These are potentially positive signs.",
+      tips: ["Avoid alcohol and heavy exercise", "Light spotting could be implantation", "Keep taking prenatal vitamins"],
+    };
+  }
+  if (day <= cycleLength - 5) {
+    return {
+      title: "If conceived, the embryo is settling in",
+      body: "Progesterone is at its peak, keeping the uterine lining thick and nourishing. If implantation occurred, hCG production is beginning. You may start to notice very early pregnancy symptoms like breast tenderness or fatigue.",
+      tips: ["Avoid hot tubs and saunas", "Continue prenatal vitamins", "Try not to symptom-spot — it's still early"],
+    };
+  }
+  return {
+    title: "Testing window approaching — stay patient",
+    body: "You're nearing the end of the two-week wait. If you conceived, hCG levels may be high enough to detect on a home pregnancy test in the coming days. Try to wait until the day of your expected period for the most accurate result.",
+    tips: ["Test with first morning urine for best accuracy", "A negative test may still be too early — wait 2 days and retest", "Whatever the result, you've done everything right"],
+  };
+}
+
 const levelColors: Record<HormoneLevel["level"], string> = {
   "very low": "bg-neutral-200 text-neutral-500",
   low: "bg-blue-100 text-blue-600",
@@ -174,7 +257,7 @@ const levelColors: Record<HormoneLevel["level"], string> = {
   falling: "bg-amber-100 text-amber-600",
 };
 
-export function DailyInsight({ periods, stats, date }: DailyInsightProps) {
+export function DailyInsight({ periods, stats, date, ttcMode }: DailyInsightProps) {
   const cycleLength = stats.avgCycleLength || 28;
 
   const targetDate = date || new Date().toISOString().split("T")[0];
@@ -195,7 +278,12 @@ export function DailyInsight({ periods, stats, date }: DailyInsightProps) {
     ? "Today"
     : new Date(targetDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
-  const insight = getDayInsight(dayInCycle, cycleLength, phaseInfo.phase);
+  const baseInsight = getDayInsight(dayInCycle, cycleLength, phaseInfo.phase);
+  const ttcOverride = ttcMode ? getTTCInsightForDay(dayInCycle, cycleLength, phaseInfo.phase) : null;
+  const insight = {
+    ...baseInsight,
+    ...(ttcOverride ?? {}),
+  };
   const phaseColor = getPhaseColor(phaseInfo.phase);
 
   return (
@@ -216,7 +304,7 @@ export function DailyInsight({ periods, stats, date }: DailyInsightProps) {
           </div>
         </div>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-pearl bg-pearl/10 px-2 py-1 rounded-full whitespace-nowrap">
-          Tip of the day
+          {ttcMode ? "Fertility tip" : "Tip of the day"}
         </span>
       </div>
 
