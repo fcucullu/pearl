@@ -124,12 +124,10 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
                 isToday ? "ring-2 ring-pearl ring-offset-1 ring-offset-surface" : ""
               } ${isSelected ? "ring-2 ring-dotted ring-pearl/50 ring-offset-1 ring-offset-surface" : ""}`}
               style={{
-                outline: isSelected ? `2px dashed ${phase ? getPhaseColor(phase) : '#e91e8e'}` : undefined,
-                outlineOffset: '2px',
-              }}
-              style={{
                 backgroundColor: phase ? `${getPhaseColor(phase)}20` : undefined,
                 color: phase ? getPhaseColor(phase) : undefined,
+                outline: isSelected ? `2px dashed ${phase ? getPhaseColor(phase) : '#e91e8e'}` : undefined,
+                outlineOffset: isSelected ? '2px' : undefined,
               }}
             >
               {day}
