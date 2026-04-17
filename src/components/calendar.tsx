@@ -37,6 +37,7 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const phases = useMemo(
     () => getMonthPhases(viewYear, viewMonth, periods, stats),
@@ -110,15 +111,22 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
           const isToday = day === todayDay;
           const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+          const isSelected = selectedDay === dateStr && !isToday;
+
           return (
             <button
               key={day}
               onClick={() => {
+                setSelectedDay(dateStr);
                 onSelectDate?.(dateStr);
               }}
               className={`relative aspect-square flex items-center justify-center rounded-full text-sm font-medium transition-all ${
                 isToday ? "ring-2 ring-pearl ring-offset-1 ring-offset-surface" : ""
-              }`}
+              } ${isSelected ? "ring-2 ring-dotted ring-pearl/50 ring-offset-1 ring-offset-surface" : ""}`}
+              style={{
+                outline: isSelected ? `2px dashed ${phase ? getPhaseColor(phase) : '#e91e8e'}` : undefined,
+                outlineOffset: '2px',
+              }}
               style={{
                 backgroundColor: phase ? `${getPhaseColor(phase)}20` : undefined,
                 color: phase ? getPhaseColor(phase) : undefined,
