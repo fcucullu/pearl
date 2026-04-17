@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, PenLine, User, Rocket } from "lucide-react";
+import { Calendar, User, Rocket } from "lucide-react";
 
 const navItems = [
   { href: "/calendario", icon: Calendar, label: "Calendar" },
-  { href: "/track", icon: PenLine, label: "Track" },
   { href: "/perfil", icon: User, label: "Profile" },
   { href: "/apps", icon: Rocket, label: "Apps" },
 ];
