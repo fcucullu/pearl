@@ -7,6 +7,7 @@ import { PhaseCard } from "@/components/phase-card";
 import { Onboarding } from "@/components/onboarding";
 import { InstallPrompt } from "@/components/install-prompt";
 import { computeStats, getPhaseForDate, getCycleAlerts, type Period } from "@/lib/cycle";
+import { HormoneChart } from "@/components/hormone-chart";
 
 export default function CalendarioPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -78,6 +79,8 @@ export default function CalendarioPage() {
 
       <CycleCalendar periods={periods} stats={stats} />
       <PhaseCard phaseInfo={phaseInfo} />
+
+      <HormoneChart periods={periods} stats={stats} />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
