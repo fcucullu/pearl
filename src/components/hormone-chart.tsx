@@ -106,22 +106,40 @@ export function HormoneChart({ periods, stats }: HormoneChartProps) {
       .join(" ");
   }
 
-  // Smooth the path using cubic bezier
+  // Catmull-Rom spline for very smooth curves
   function toSmoothPath(data: number[]): string {
     const maxVal = 100;
-    const points = data.map((v, i) => ({
-      x: padLeft + (i / (data.length - 1)) * chartW,
+    // Upsample: interpolate 4x more points for extra smoothness
+    const upsampled: number[] = [];
+    for (let i = 0; i < data.length - 1; i++) {
+      for (let t = 0; t < 4; t++) {
+        const frac = t / 4;
+        upsampled.push(data[i] + (data[i + 1] - data[i]) * frac);
+      }
+    }
+    upsampled.push(data[data.length - 1]);
+
+    const points = upsampled.map((v, i) => ({
+      x: padLeft + (i / (upsampled.length - 1)) * chartW,
       y: padTop + chartH - (v / maxVal) * chartH,
     }));
 
-    if (points.length < 2) return "";
+    if (points.length < 3) return "";
 
+    // Catmull-Rom to cubic bezier
     let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const cpx = (prev.x + curr.x) / 2;
-      d += ` C${cpx.toFixed(1)},${prev.y.toFixed(1)} ${cpx.toFixed(1)},${curr.y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(i - 1, 0)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(i + 2, points.length - 1)];
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
     }
     return d;
   }
