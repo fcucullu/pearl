@@ -83,7 +83,7 @@ export default function CalendarioPage() {
 
       <DailyInsight periods={periods} stats={stats} date={selectedDate} />
 
-      <HormoneChart periods={periods} stats={stats} />
+      <HormoneChart periods={periods} stats={stats} selectedDate={selectedDate} />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">

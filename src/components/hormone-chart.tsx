@@ -73,23 +73,24 @@ function generateHormoneCurves(cycleLength: number) {
 interface HormoneChartProps {
   periods: Period[];
   stats: CycleStats;
+  selectedDate?: string | null;
 }
 
-export function HormoneChart({ periods, stats }: HormoneChartProps) {
+export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps) {
   const [selectedHormone, setSelectedHormone] = useState<string | null>(null);
   const cycleLength = stats.avgCycleLength || 28;
 
-  // Find current day in cycle
-  const today = new Date();
+  // Find current day in cycle based on selected date or today
+  const targetDate = selectedDate ? new Date(selectedDate) : new Date();
+  const isToday = !selectedDate || selectedDate === new Date().toISOString().split("T")[0];
   const sorted = [...periods].sort((a, b) => a.start_date.localeCompare(b.start_date));
   const lastPeriod = sorted[sorted.length - 1];
 
   let currentDay = 0;
   if (lastPeriod) {
     const lastStart = new Date(lastPeriod.start_date);
-    const diffMs = today.getTime() - lastStart.getTime();
-    currentDay = Math.floor(diffMs / 86400000) % cycleLength;
-    if (currentDay < 0) currentDay = 0;
+    const diffMs = targetDate.getTime() - lastStart.getTime();
+    currentDay = ((Math.floor(diffMs / 86400000) % cycleLength) + cycleLength) % cycleLength;
   }
 
   const curves = useMemo(() => generateHormoneCurves(cycleLength), [cycleLength]);
@@ -216,7 +217,7 @@ export function HormoneChart({ periods, stats }: HormoneChartProps) {
         />
         <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} />
         <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="8" fill={COLORS.today} fontWeight="600">
-          Today
+          {isToday ? "Today" : targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
         </text>
 
         {/* Phase labels at bottom */}
