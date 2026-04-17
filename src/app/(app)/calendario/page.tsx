@@ -79,7 +79,7 @@ export default function CalendarioPage() {
         </div>
       ))}
 
-      <CycleCalendar periods={periods} stats={stats} onSelectDate={(date) => setSelectedDate(date === selectedDate ? null : date)} />
+      <CycleCalendar periods={periods} stats={stats} onSelectDate={(date) => setSelectedDate(date)} />
 
       <DailyInsight periods={periods} stats={stats} date={selectedDate} />
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { X } from "lucide-react";
 import type { CycleStats, Period } from "@/lib/cycle";
 
 const COLORS = {
@@ -9,6 +10,13 @@ const COLORS = {
   fsh: "#3b82f6",          // blue
   lh: "#ef4444",           // red
   today: "#e91e8e",        // pearl pink
+};
+
+const HORMONE_DESCRIPTIONS: Record<string, string> = {
+  Estrogen: "The primary female hormone. It builds the uterine lining, boosts mood and energy, improves skin and cognition. It rises during the follicular phase, peaks at ovulation, dips briefly, then has a secondary rise during the luteal phase before dropping to trigger menstruation.",
+  Progesterone: "The calming hormone. It stabilizes the uterine lining after ovulation, preparing for potential pregnancy. It promotes relaxation and sleep but can also cause bloating, mood swings, and cravings when it drops sharply before your period.",
+  FSH: "Follicle-Stimulating Hormone. Produced by the pituitary gland, it signals the ovaries to develop follicles (eggs). It's highest at the beginning of your cycle, kick-starting the process that leads to ovulation.",
+  LH: "Luteinizing Hormone. It triggers ovulation with a dramatic surge mid-cycle — this is the spike that releases the mature egg. LH is what ovulation tests detect. The surge is brief but powerful, lasting about 24-48 hours.",
 };
 
 // Generate smooth hormone curves for a given cycle length
@@ -68,6 +76,7 @@ interface HormoneChartProps {
 }
 
 export function HormoneChart({ periods, stats }: HormoneChartProps) {
+  const [selectedHormone, setSelectedHormone] = useState<string | null>(null);
   const cycleLength = stats.avgCycleLength || 28;
 
   // Find current day in cycle
@@ -225,15 +234,39 @@ export function HormoneChart({ periods, stats }: HormoneChartProps) {
         </text>
       </svg>
 
-      {/* Legend */}
+      {/* Legend — clickable */}
       <div className="flex items-center justify-center gap-4 mt-2">
         {hormones.map((h) => (
-          <div key={h.name} className="flex items-center gap-1.5">
+          <button
+            key={h.name}
+            onClick={() => setSelectedHormone(selectedHormone === h.name ? null : h.name)}
+            className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full transition-all"
+            style={selectedHormone === h.name ? { backgroundColor: `${h.color}20`, outline: `1.5px solid ${h.color}` } : undefined}
+          >
             <span className="w-3 h-0.5 rounded-full" style={{ backgroundColor: h.color }} />
             <span className="text-[9px] text-muted">{h.name}</span>
-          </div>
+          </button>
         ))}
       </div>
+
+      {/* Hormone info panel */}
+      {selectedHormone && (
+        <div
+          className="mt-3 rounded-xl p-4 relative"
+          style={{ backgroundColor: `${hormones.find(h => h.name === selectedHormone)?.color}10`, borderLeft: `3px solid ${hormones.find(h => h.name === selectedHormone)?.color}` }}
+        >
+          <button
+            onClick={() => setSelectedHormone(null)}
+            className="absolute top-3 right-3 text-muted hover:text-foreground"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+          <p className="font-semibold text-sm mb-1" style={{ color: hormones.find(h => h.name === selectedHormone)?.color }}>
+            {selectedHormone}
+          </p>
+          <p className="text-xs text-muted leading-relaxed">{HORMONE_DESCRIPTIONS[selectedHormone]}</p>
+        </div>
+      )}
     </div>
   );
 }

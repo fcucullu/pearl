@@ -116,7 +116,7 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
               onClick={() => {
                 onSelectDate?.(dateStr);
                 if (phase) {
-                  setSelectedPhase(selectedPhase === phase ? null : phase);
+                  setSelectedPhase(phase);
                 }
               }}
               className={`relative aspect-square flex items-center justify-center rounded-full text-sm font-medium transition-all ${
