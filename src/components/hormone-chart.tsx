@@ -225,7 +225,7 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
           opacity={showSelectedLine ? "0.4" : "0.8"}
         />
         <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} opacity={showSelectedLine ? 0.4 : 1} />
-        <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="7" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
+        <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="9" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
           Today
         </text>
 
@@ -243,23 +243,23 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
               opacity="0.9"
             />
             <circle cx={selectedX} cy={padTop - 3} r="3" fill="#5959eb" />
-            <text x={selectedX} y={padTop + chartH + 12} textAnchor="middle" fontSize="7" fill="#5959eb" fontWeight="600">
+            <text x={selectedX} y={padTop + chartH + 12} textAnchor="middle" fontSize="9" fill="#5959eb" fontWeight="600">
               {targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </text>
           </>
         )}
 
         {/* Phase labels at bottom */}
-        <text x={dayToX(periodEnd / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="7" fill="#9ca3af">
+        <text x={dayToX(periodEnd / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="9" fill="#9ca3af">
           Menstrual
         </text>
-        <text x={dayToX((periodEnd + follicularEnd) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="7" fill="#9ca3af">
+        <text x={dayToX((periodEnd + follicularEnd) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="9" fill="#9ca3af">
           Follicular
         </text>
-        <text x={dayToX((follicularEnd + ovulationEnd) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="7" fill="#9ca3af">
+        <text x={dayToX((follicularEnd + ovulationEnd) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="9" fill="#9ca3af">
           Ovulation
         </text>
-        <text x={dayToX((ovulationEnd + cycleLength - 1) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="7" fill="#9ca3af">
+        <text x={dayToX((ovulationEnd + cycleLength - 1) / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="9" fill="#9ca3af">
           Luteal
         </text>
       </svg>
@@ -274,7 +274,7 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
             style={selectedHormone === h.name ? { backgroundColor: `${h.color}20`, outline: `1.5px solid ${h.color}` } : undefined}
           >
             <span className="w-3 h-0.5 rounded-full" style={{ backgroundColor: h.color }} />
-            <span className="text-[9px] text-muted">{h.name}</span>
+            <span className="text-[11px] text-muted">{h.name}</span>
           </button>
         ))}
       </div>
