@@ -8,6 +8,7 @@ import { Onboarding } from "@/components/onboarding";
 import { InstallPrompt } from "@/components/install-prompt";
 import { computeStats, getPhaseForDate, getCycleAlerts, type Period } from "@/lib/cycle";
 import { HormoneChart } from "@/components/hormone-chart";
+import { DailyInsight } from "@/components/daily-insight";
 
 export default function CalendarioPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -78,7 +79,8 @@ export default function CalendarioPage() {
       ))}
 
       <CycleCalendar periods={periods} stats={stats} />
-      <PhaseCard phaseInfo={phaseInfo} />
+
+      <DailyInsight periods={periods} stats={stats} />
 
       <HormoneChart periods={periods} stats={stats} />
 
