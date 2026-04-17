@@ -84,22 +84,6 @@ export default function CalendarioPage() {
       <DailyInsight periods={periods} stats={stats} date={selectedDate} />
 
       <HormoneChart periods={periods} stats={stats} selectedDate={selectedDate} />
-
-      {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-surface rounded-xl p-3 text-center border border-border">
-          <p className="text-lg font-bold text-pearl">{stats.avgCycleLength}</p>
-          <p className="text-[10px] text-muted">Avg cycle</p>
-        </div>
-        <div className="bg-surface rounded-xl p-3 text-center border border-border">
-          <p className="text-lg font-bold text-menstrual">{stats.avgPeriodDuration}</p>
-          <p className="text-[10px] text-muted">Period days</p>
-        </div>
-        <div className="bg-surface rounded-xl p-3 text-center border border-border">
-          <p className="text-lg font-bold text-foreground">{stats.cycleCount}</p>
-          <p className="text-[10px] text-muted">Cycles logged</p>
-        </div>
-      </div>
     </div>
   );
 }
