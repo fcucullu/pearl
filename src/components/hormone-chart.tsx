@@ -138,10 +138,10 @@ export function HormoneChart({ periods, stats }: HormoneChartProps) {
   }
 
   const phaseColors = {
-    menstrual: "rgba(233,30,142,0.08)",
-    follicular: "rgba(76,175,80,0.06)",
-    ovulation: "rgba(255,152,0,0.08)",
-    luteal: "rgba(156,39,176,0.06)",
+    menstrual: "rgba(232,64,87,0.10)",
+    follicular: "rgba(96,181,160,0.10)",
+    ovulation: "rgba(167,139,250,0.10)",
+    luteal: "rgba(245,166,35,0.10)",
   };
 
   const hormones = [
