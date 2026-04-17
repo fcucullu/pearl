@@ -154,7 +154,16 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
     return d;
   }
 
-  const todayX = padLeft + (currentDay / (cycleLength - 1)) * chartW;
+  // Always compute actual today position
+  let actualTodayDay = 0;
+  if (lastPeriod) {
+    const lastStart = new Date(lastPeriod.start_date);
+    const diffMs = new Date().getTime() - lastStart.getTime();
+    actualTodayDay = ((Math.floor(diffMs / 86400000) % cycleLength) + cycleLength) % cycleLength;
+  }
+  const todayX = padLeft + (actualTodayDay / (cycleLength - 1)) * chartW;
+  const selectedX = padLeft + (currentDay / (cycleLength - 1)) * chartW;
+  const showSelectedLine = !isToday;
 
   // Phase boundaries for background bands
   const periodEnd = Math.round(stats.avgPeriodDuration || 5);
@@ -204,21 +213,41 @@ export function HormoneChart({ periods, stats, selectedDate }: HormoneChartProps
           />
         ))}
 
-        {/* Today marker */}
+        {/* Today marker — always visible */}
         <line
           x1={todayX}
           y1={padTop}
           x2={todayX}
           y2={padTop + chartH}
           stroke={COLORS.today}
-          strokeWidth="1.5"
+          strokeWidth={showSelectedLine ? "1" : "1.5"}
           strokeDasharray="4 3"
-          opacity="0.8"
+          opacity={showSelectedLine ? "0.4" : "0.8"}
         />
-        <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} />
-        <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="8" fill={COLORS.today} fontWeight="600">
-          {isToday ? "Today" : targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+        <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} opacity={showSelectedLine ? 0.4 : 1} />
+        <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="7" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
+          Today
         </text>
+
+        {/* Selected date marker — only when different from today */}
+        {showSelectedLine && (
+          <>
+            <line
+              x1={selectedX}
+              y1={padTop}
+              x2={selectedX}
+              y2={padTop + chartH}
+              stroke="#5959eb"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+              opacity="0.9"
+            />
+            <circle cx={selectedX} cy={padTop - 3} r="3" fill="#5959eb" />
+            <text x={selectedX} y={padTop + chartH + 12} textAnchor="middle" fontSize="7" fill="#5959eb" fontWeight="600">
+              {targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </text>
+          </>
+        )}
 
         {/* Phase labels at bottom */}
         <text x={dayToX(periodEnd / 2)} y={padTop + chartH + 24} textAnchor="middle" fontSize="7" fill="#9ca3af">
