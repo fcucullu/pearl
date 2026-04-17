@@ -206,14 +206,14 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats + Export */}
       {periods.length > 0 && (
         <div className="bg-surface rounded-2xl p-5 border border-border mb-4">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 className="w-4 h-4 text-pearl" />
             <h2 className="font-semibold text-sm">Your Stats</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center">
               <p className="text-xl font-bold text-pearl">{stats.avgCycleLength}</p>
               <p className="text-[10px] text-muted">Avg cycle (days)</p>
@@ -227,44 +227,15 @@ export default function PerfilPage() {
               <p className="text-[10px] text-muted">Cycles logged</p>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* TTC Mode */}
-      <div className="bg-surface rounded-2xl p-5 border border-border mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Baby className="w-4 h-4 text-pearl" />
-          <h2 className="font-semibold text-sm">Trying to Conceive</h2>
-        </div>
-        <p className="text-xs text-muted mb-3">
-          Enable to get fertility-focused insights, tips, and a highlighted fertile window on your hormone chart.
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted">I'm trying to conceive</span>
           <button
-            onClick={() => setTtcMode(!ttcMode)}
-            className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${
-              ttcMode ? "bg-pearl" : "bg-gray-300"
-            }`}
+            onClick={exportPDF}
+            disabled={exporting}
+            className="w-full flex items-center justify-center gap-2 border border-border rounded-xl py-2.5 text-sm font-medium text-foreground hover:border-pearl/30 transition-colors disabled:opacity-50"
           >
-            <span
-              className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform"
-              style={{ transform: ttcMode ? "translateX(20px)" : "translateX(0)" }}
-            />
+            <FileDown className="w-4 h-4 text-pearl" />
+            {exporting ? "Generating..." : "Export for Doctor"}
           </button>
         </div>
-      </div>
-
-      {/* Export for Doctor */}
-      {periods.length > 0 && (
-        <button
-          onClick={exportPDF}
-          disabled={exporting}
-          className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-2xl py-3.5 text-sm font-medium text-foreground hover:border-pearl/30 transition-colors mb-4 disabled:opacity-50"
-        >
-          <FileDown className="w-4 h-4 text-pearl" />
-          {exporting ? "Generating..." : "Export for Doctor"}
-        </button>
       )}
 
       {/* Partner notifications */}
@@ -313,6 +284,31 @@ export default function PerfilPage() {
             className="w-full bg-pearl text-white py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 hover:bg-pearl-light transition-colors"
           >
             {saved ? "Saved!" : saving ? "Saving..." : "Save Settings"}
+          </button>
+        </div>
+      </div>
+
+      {/* TTC Mode */}
+      <div className="bg-surface rounded-2xl p-5 border border-border mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Baby className="w-4 h-4 text-pearl" />
+          <h2 className="font-semibold text-sm">Trying to Conceive</h2>
+        </div>
+        <p className="text-xs text-muted mb-3">
+          Enable to get fertility-focused insights, tips, and a highlighted fertile window on your hormone chart.
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted">I'm trying to conceive</span>
+          <button
+            onClick={() => setTtcMode(!ttcMode)}
+            className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${
+              ttcMode ? "bg-pearl" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform"
+              style={{ transform: ttcMode ? "translateX(20px)" : "translateX(0)" }}
+            />
           </button>
         </div>
       </div>
