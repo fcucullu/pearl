@@ -115,9 +115,6 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
               key={day}
               onClick={() => {
                 onSelectDate?.(dateStr);
-                if (phase) {
-                  setSelectedPhase(phase);
-                }
               }}
               className={`relative aspect-square flex items-center justify-center rounded-full text-sm font-medium transition-all ${
                 isToday ? "ring-2 ring-pearl ring-offset-1 ring-offset-surface" : ""
