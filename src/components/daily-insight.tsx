@@ -6,6 +6,7 @@ import { getPhaseForDate, getPhaseColor, getPhaseEmoji, getPhaseName } from "@/l
 interface DailyInsightProps {
   periods: Period[];
   stats: CycleStats;
+  date?: string | null; // YYYY-MM-DD, defaults to today
 }
 
 interface HormoneLevel {
@@ -173,20 +174,26 @@ const levelColors: Record<HormoneLevel["level"], string> = {
   falling: "bg-amber-100 text-amber-600",
 };
 
-export function DailyInsight({ periods, stats }: DailyInsightProps) {
+export function DailyInsight({ periods, stats, date }: DailyInsightProps) {
   const cycleLength = stats.avgCycleLength || 28;
 
-  const today = new Date().toISOString().split("T")[0];
-  const phaseInfo = getPhaseForDate(today, periods, stats);
+  const targetDate = date || new Date().toISOString().split("T")[0];
+  const isToday = !date || date === new Date().toISOString().split("T")[0];
+  const phaseInfo = getPhaseForDate(targetDate, periods, stats);
 
   // Calculate day in cycle
   const sorted = [...periods].sort((a, b) => a.start_date.localeCompare(b.start_date));
   const lastPeriod = sorted[sorted.length - 1];
   let dayInCycle = 1;
   if (lastPeriod) {
-    const diffMs = new Date().getTime() - new Date(lastPeriod.start_date).getTime();
-    dayInCycle = Math.max(1, Math.floor(diffMs / 86400000) % cycleLength + 1);
+    const diffMs = new Date(targetDate).getTime() - new Date(lastPeriod.start_date).getTime();
+    dayInCycle = Math.max(1, ((Math.floor(diffMs / 86400000) % cycleLength) + cycleLength) % cycleLength + 1);
   }
+
+  // Format selected date for display
+  const dateLabel = isToday
+    ? "Today"
+    : new Date(targetDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
   const insight = getDayInsight(dayInCycle, cycleLength, phaseInfo.phase);
   const phaseColor = getPhaseColor(phaseInfo.phase);
@@ -200,7 +207,7 @@ export function DailyInsight({ periods, stats }: DailyInsightProps) {
         <span className="text-lg">{getPhaseEmoji(phaseInfo.phase)}</span>
         <div>
           <p className="text-xs text-muted">
-            Day {dayInCycle} of {cycleLength} · {getPhaseName(phaseInfo.phase)} phase
+            {dateLabel} · Day {dayInCycle} of {cycleLength} · {getPhaseName(phaseInfo.phase)} phase
           </p>
           <h3 className="text-sm font-semibold" style={{ color: phaseColor }}>
             {insight.title}

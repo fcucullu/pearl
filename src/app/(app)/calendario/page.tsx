@@ -13,6 +13,7 @@ import { DailyInsight } from "@/components/daily-insight";
 export default function CalendarioPage() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -78,9 +79,9 @@ export default function CalendarioPage() {
         </div>
       ))}
 
-      <CycleCalendar periods={periods} stats={stats} />
+      <CycleCalendar periods={periods} stats={stats} onSelectDate={(date) => setSelectedDate(date === selectedDate ? null : date)} />
 
-      <DailyInsight periods={periods} stats={stats} />
+      <DailyInsight periods={periods} stats={stats} date={selectedDate} />
 
       <HormoneChart periods={periods} stats={stats} />
 
