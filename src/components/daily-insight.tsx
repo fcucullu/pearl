@@ -203,16 +203,21 @@ export function DailyInsight({ periods, stats, date }: DailyInsightProps) {
       className="bg-surface rounded-2xl p-4 shadow-sm border border-border"
       style={{ borderLeftWidth: 3, borderLeftColor: phaseColor }}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">{getPhaseEmoji(phaseInfo.phase)}</span>
-        <div>
-          <p className="text-xs text-muted">
-            {dateLabel} · Day {dayInCycle} of {cycleLength} · {getPhaseName(phaseInfo.phase)} phase
-          </p>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{getPhaseEmoji(phaseInfo.phase)}</span>
+          <div>
+            <p className="text-xs text-muted">
+              {dateLabel} · Day {dayInCycle} of {cycleLength} · {getPhaseName(phaseInfo.phase)} phase
+            </p>
           <h3 className="text-sm font-semibold" style={{ color: phaseColor }}>
             {insight.title}
           </h3>
+          </div>
         </div>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-pearl bg-pearl/10 px-2 py-1 rounded-full whitespace-nowrap">
+          Tip of the day
+        </span>
       </div>
 
       <p className="text-xs text-muted leading-relaxed mb-3">{insight.body}</p>
