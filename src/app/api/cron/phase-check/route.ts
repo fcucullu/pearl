@@ -12,12 +12,25 @@ import {
   type Phase,
 } from "@/lib/cycle";
 
+export async function GET(req: NextRequest) {
+  // Verify Vercel cron secret
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return runPhaseCheck();
+}
+
 export async function POST(req: NextRequest) {
-  // Verify cron secret
+  // Verify service role key (for manual triggers)
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  return runPhaseCheck();
+}
+
+async function runPhaseCheck() {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
