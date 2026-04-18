@@ -1,0 +1,14 @@
+name: Daily Phase Check
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 8am UTC = 10am Spain
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  phase-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger phase check
+        run: |
+          curl -s -X POST "https://pearl.franciscocucullu.com/api/cron/phase-check" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
