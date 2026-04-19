@@ -41,7 +41,7 @@ async function runPhaseCheck() {
   // Get all users with partner notifications enabled
   const { data: notifications } = await supabase
     .from("pearl_partner_notifications")
-    .select("user_id, partner_email, enabled, last_notified_phase")
+    .select("user_id, partner_email, enabled, last_notified_phase, last_notified_at")
     .eq("enabled", true);
 
   if (!notifications?.length) {
@@ -69,8 +69,15 @@ async function runPhaseCheck() {
     const phaseInfo = getPhaseForDate(today, periods, stats);
     const currentPhase = phaseInfo.phase;
 
-    // Skip if phase hasn't changed
-    if (currentPhase === notif.last_notified_phase) continue;
+    // Check if this is a new cycle (same phase name but new period started after last notification)
+    const latestPeriod = periods[periods.length - 1];
+    const isNewCycle = currentPhase === "menstrual" &&
+      notif.last_notified_phase === "menstrual" &&
+      notif.last_notified_at &&
+      latestPeriod.start_date > notif.last_notified_at.split("T")[0];
+
+    // Skip if phase hasn't changed AND it's not a new cycle
+    if (currentPhase === notif.last_notified_phase && !isNewCycle) continue;
 
     // Get user's name
     const { data: { user } } = await supabase.auth.admin.getUserById(notif.user_id);
@@ -119,10 +126,10 @@ async function runPhaseCheck() {
     });
 
     if (!error) {
-      // Update last notified phase
+      // Update last notified phase and timestamp
       await supabase
         .from("pearl_partner_notifications")
-        .update({ last_notified_phase: currentPhase })
+        .update({ last_notified_phase: currentPhase, last_notified_at: new Date().toISOString() })
         .eq("user_id", notif.user_id);
       sent++;
     } else {
