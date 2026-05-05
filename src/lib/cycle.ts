@@ -130,8 +130,8 @@ export function getPhaseForDate(
     isPredicted = true;
   }
 
-  // If beyond current cycle: check if period is late
-  if (cycleDay >= avgCycleLength) {
+  // If beyond current cycle: check if period is late (strict > so day 28 of 28 isn't "late")
+  if (cycleDay > avgCycleLength) {
     const today = new Date().toISOString().split("T")[0];
     daysLate = cycleDay - avgCycleLength;
 
@@ -216,6 +216,21 @@ export function getPhaseForDate(
   }
 
   const daysUntilNextPeriod = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
+
+  // Bug #4 fix: if date is within a confirmed period, force menstrual phase
+  if (isInConfirmedPeriod && phase !== "menstrual") {
+    const containingPeriod = sorted.find((p) => {
+      const end = p.end_date || p.start_date;
+      return date >= p.start_date && date <= end;
+    });
+    if (containingPeriod) {
+      phase = "menstrual";
+      dayInPhase = daysBetween(containingPeriod.start_date, date) + 1;
+      totalDaysInPhase = containingPeriod.end_date
+        ? daysBetween(containingPeriod.start_date, containingPeriod.end_date) + 1
+        : avgPeriodDuration;
+    }
+  }
 
   // Check for extended period: currently menstruating longer than average
   let isExtendedPeriod = false;

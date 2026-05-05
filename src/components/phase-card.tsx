@@ -18,7 +18,7 @@ export function PhaseCard({ phaseInfo }: PhaseCardProps) {
   const name = getPhaseName(phase);
   const emoji = getPhaseEmoji(phase);
   const rec = getPhaseRecommendation(phase);
-  const progress = dayInPhase / totalDaysInPhase;
+  const progress = Math.min(1, dayInPhase / totalDaysInPhase);
 
   return (
     <div className="bg-surface rounded-2xl p-5 shadow-sm border border-border">
