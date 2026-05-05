@@ -13,7 +13,7 @@ interface PhaseCardProps {
 }
 
 export function PhaseCard({ phaseInfo }: PhaseCardProps) {
-  const { phase, dayInPhase, totalDaysInPhase, daysUntilNextPeriod } = phaseInfo;
+  const { phase, dayInPhase, totalDaysInPhase, daysUntilNextPeriod, isPredicted, isLate, daysLate } = phaseInfo;
   const color = getPhaseColor(phase);
   const name = getPhaseName(phase);
   const emoji = getPhaseEmoji(phase);
@@ -22,6 +22,22 @@ export function PhaseCard({ phaseInfo }: PhaseCardProps) {
 
   return (
     <div className="bg-surface rounded-2xl p-5 shadow-sm border border-border">
+      {/* Late period banner */}
+      {isLate && isPredicted && phase === "menstrual" && (
+        <div className="mb-3 p-3 rounded-xl text-sm" style={{ backgroundColor: `${color}15`, border: `1px dashed ${color}50` }}>
+          <p className="font-medium" style={{ color }}>
+            Period expected {daysLate} {daysLate === 1 ? "day" : "days"} ago
+          </p>
+          <p className="text-xs text-muted mt-0.5">
+            This is a prediction. Log your period when it starts to update your cycle.
+          </p>
+        </div>
+      )}
+      {isPredicted && !isLate && (
+        <div className="mb-3 p-2 rounded-lg text-xs text-muted text-center" style={{ backgroundColor: `${color}08` }}>
+          Predicted phase — based on your cycle average
+        </div>
+      )}
       {/* Phase header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

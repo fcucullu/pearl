@@ -21,6 +21,9 @@ export interface PhaseInfo {
   totalDaysInPhase: number;
   nextPeriodStart: string | null;
   daysUntilNextPeriod: number | null;
+  isPredicted: boolean; // true if this phase is a prediction, not confirmed by user
+  isLate: boolean; // true if period is overdue
+  daysLate: number; // how many days late
 }
 
 export interface CycleStats {
@@ -102,7 +105,7 @@ export function getPhaseForDate(
   // Find which cycle day we're on
   const sorted = [...periods].sort((a, b) => a.start_date.localeCompare(b.start_date));
   if (sorted.length === 0) {
-    return { phase: "follicular", dayInPhase: 1, totalDaysInPhase: 14, nextPeriodStart: null, daysUntilNextPeriod: null };
+    return { phase: "follicular", dayInPhase: 1, totalDaysInPhase: 14, nextPeriodStart: null, daysUntilNextPeriod: null, isPredicted: true, isLate: false, daysLate: 0 };
   }
 
   // Find the most recent period start that is <= date
@@ -112,15 +115,37 @@ export function getPhaseForDate(
     else break;
   }
 
-  let cycleDay = daysBetween(cycleStart, date);
+  const rawCycleDay = daysBetween(cycleStart, date);
+  let isPredicted = false;
+  let isLate = false;
+  let daysLate = 0;
+
+  let cycleDay = rawCycleDay;
 
   // If date is before the first logged period, project backwards
   if (cycleDay < 0) {
     cycleDay = ((cycleDay % avgCycleLength) + avgCycleLength) % avgCycleLength;
+    isPredicted = true;
   }
-  // Wrap around for future predictions
+
+  // If beyond current cycle: this is a predicted phase
   if (cycleDay >= avgCycleLength) {
+    isPredicted = true;
+    isLate = true;
+    daysLate = cycleDay - avgCycleLength;
     cycleDay = cycleDay % avgCycleLength;
+  }
+
+  // Check if this date falls within a CONFIRMED period (logged by user)
+  const isInConfirmedPeriod = sorted.some((p) => {
+    const end = p.end_date || p.start_date;
+    return date >= p.start_date && date <= end;
+  });
+
+  if (isInConfirmedPeriod) {
+    isPredicted = false;
+    isLate = false;
+    daysLate = 0;
   }
 
   let phase: Phase;
@@ -147,7 +172,7 @@ export function getPhaseForDate(
 
   const daysUntilNextPeriod = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
 
-  return { phase, dayInPhase, totalDaysInPhase, nextPeriodStart, daysUntilNextPeriod };
+  return { phase, dayInPhase, totalDaysInPhase, nextPeriodStart, daysUntilNextPeriod, isPredicted, isLate, daysLate };
 }
 
 export function getPhaseColor(phase: Phase): string {
@@ -321,19 +346,25 @@ export function getCycleAlerts(periods: Period[], stats: CycleStats): CycleAlert
   return alerts;
 }
 
+export interface DayPhaseInfo {
+  phase: Phase;
+  isPredicted: boolean;
+  isLate: boolean;
+}
+
 /** Get phase for each day in a month, used for calendar coloring */
 export function getMonthPhases(
   year: number,
   month: number, // 0-indexed
   periods: Period[],
   stats: CycleStats
-): Map<number, Phase> {
-  const map = new Map<number, Phase>();
+): Map<number, DayPhaseInfo> {
+  const map = new Map<number, DayPhaseInfo>();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const info = getPhaseForDate(dateStr, periods, stats);
-    map.set(day, info.phase);
+    map.set(day, { phase: info.phase, isPredicted: info.isPredicted, isLate: info.isLate });
   }
   return map;
 }

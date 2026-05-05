@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import type { Period, CycleStats, Phase } from "@/lib/cycle";
+import type { Period, CycleStats, Phase, DayPhaseInfo } from "@/lib/cycle";
 import { getMonthPhases, getPhaseColor, getPhaseName, getPhaseEmoji } from "@/lib/cycle";
 
 const PHASE_DESCRIPTIONS: Record<Phase, { duration: string; description: string }> = {
@@ -107,11 +107,17 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
         ))}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
-          const phase = phases.get(day);
+          const dayInfo = phases.get(day);
+          const phase = dayInfo?.phase;
+          const isPredicted = dayInfo?.isPredicted || false;
           const isToday = day === todayDay;
           const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           const isSelected = selectedDay === dateStr && !isToday;
+          const phaseColor = phase ? getPhaseColor(phase) : undefined;
+
+          // Predicted menstrual = striped/dashed border instead of solid bg
+          const isPredictedMenstrual = isPredicted && phase === "menstrual";
 
           return (
             <button
@@ -124,15 +130,20 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
                 isToday ? "ring-2 ring-pearl ring-offset-1 ring-offset-surface" : ""
               } ${isSelected ? "ring-2 ring-dotted ring-pearl/50 ring-offset-1 ring-offset-surface" : ""}`}
               style={{
-                backgroundColor: phase ? `${getPhaseColor(phase)}20` : undefined,
-                color: phase ? getPhaseColor(phase) : undefined,
-                outline: isSelected ? `2px dashed ${phase ? getPhaseColor(phase) : '#e91e8e'}` : undefined,
+                backgroundColor: isPredictedMenstrual ? "transparent" : (phase ? `${phaseColor}20` : undefined),
+                color: isPredicted ? `${phaseColor}80` : phaseColor,
+                border: isPredictedMenstrual ? `2px dashed ${phaseColor}60` : undefined,
+                outline: isSelected ? `2px dashed ${phaseColor || '#e91e8e'}` : undefined,
                 outlineOffset: isSelected ? '2px' : undefined,
+                opacity: isPredicted && phase !== "menstrual" ? 0.5 : 1,
               }}
             >
               {day}
               {isToday && (
                 <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-pearl" />
+              )}
+              {isPredictedMenstrual && (
+                <span className="absolute -top-0.5 -right-0.5 text-[7px]">?</span>
               )}
             </button>
           );
@@ -140,7 +151,7 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
       </div>
 
       {/* Legend — clickable */}
-      <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-border">
+      <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-border flex-wrap">
         {(["menstrual", "follicular", "ovulation", "luteal"] as Phase[]).map((p) => (
           <button
             key={p}
