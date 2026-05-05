@@ -21,9 +21,11 @@ export interface PhaseInfo {
   totalDaysInPhase: number;
   nextPeriodStart: string | null;
   daysUntilNextPeriod: number | null;
-  isPredicted: boolean; // true if this phase is a prediction, not confirmed by user
-  isLate: boolean; // true if period is overdue
-  daysLate: number; // how many days late
+  isPredicted: boolean;
+  isLate: boolean;
+  daysLate: number;
+  isExtendedPeriod: boolean; // true if period is longer than average
+  periodDay: number; // how many days into the current period (0 if not menstruating)
 }
 
 export interface CycleStats {
@@ -105,7 +107,7 @@ export function getPhaseForDate(
   // Find which cycle day we're on
   const sorted = [...periods].sort((a, b) => a.start_date.localeCompare(b.start_date));
   if (sorted.length === 0) {
-    return { phase: "follicular", dayInPhase: 1, totalDaysInPhase: 14, nextPeriodStart: null, daysUntilNextPeriod: null, isPredicted: true, isLate: false, daysLate: 0 };
+    return { phase: "follicular", dayInPhase: 1, totalDaysInPhase: 14, nextPeriodStart: null, daysUntilNextPeriod: null, isPredicted: true, isLate: false, daysLate: 0, isExtendedPeriod: false, periodDay: 0 };
   }
 
   // Find the most recent period start that is <= date
@@ -149,6 +151,8 @@ export function getPhaseForDate(
         daysUntilNextPeriod: daysUntilNextPeriodVal,
         isPredicted: false,
         isLate: false,
+        isExtendedPeriod: false,
+        periodDay: 0,
         daysLate: 0,
       };
     }
@@ -165,6 +169,8 @@ export function getPhaseForDate(
         daysUntilNextPeriod: daysUntilNextPeriodVal,
         isPredicted: true,
         isLate: true,
+        isExtendedPeriod: false,
+        periodDay: 0,
         daysLate,
       };
     }
@@ -211,7 +217,28 @@ export function getPhaseForDate(
 
   const daysUntilNextPeriod = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
 
-  return { phase, dayInPhase, totalDaysInPhase, nextPeriodStart, daysUntilNextPeriod, isPredicted, isLate, daysLate };
+  // Check for extended period: currently menstruating longer than average
+  let isExtendedPeriod = false;
+  let periodDay = 0;
+
+  // Find the period that contains this date (ongoing or confirmed)
+  const activePeriod = sorted.find((p) => {
+    const end = p.end_date || "9999-12-31"; // if no end_date, period is ongoing
+    return date >= p.start_date && date <= end;
+  });
+
+  if (activePeriod) {
+    periodDay = daysBetween(activePeriod.start_date, date) + 1;
+    if (periodDay > avgPeriodDuration) {
+      isExtendedPeriod = true;
+      // Override phase to menstrual since user is still in their period
+      phase = "menstrual";
+      dayInPhase = periodDay;
+      totalDaysInPhase = avgPeriodDuration;
+    }
+  }
+
+  return { phase, dayInPhase, totalDaysInPhase, nextPeriodStart, daysUntilNextPeriod, isPredicted, isLate, daysLate, isExtendedPeriod, periodDay };
 }
 
 export function getPhaseColor(phase: Phase): string {
@@ -389,6 +416,7 @@ export interface DayPhaseInfo {
   phase: Phase;
   isPredicted: boolean;
   isLate: boolean;
+  isExtendedPeriod: boolean;
 }
 
 /** Get phase for each day in a month, used for calendar coloring */
@@ -403,7 +431,7 @@ export function getMonthPhases(
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const info = getPhaseForDate(dateStr, periods, stats);
-    map.set(day, { phase: info.phase, isPredicted: info.isPredicted, isLate: info.isLate });
+    map.set(day, { phase: info.phase, isPredicted: info.isPredicted, isLate: info.isLate, isExtendedPeriod: info.isExtendedPeriod });
   }
   return map;
 }

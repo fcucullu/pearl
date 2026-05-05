@@ -113,11 +113,13 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
           const isToday = day === todayDay;
           const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+          const isExtended = dayInfo?.isExtendedPeriod || false;
           const isSelected = selectedDay === dateStr && !isToday;
           const phaseColor = phase ? getPhaseColor(phase) : undefined;
 
-          // Predicted menstrual = striped/dashed border instead of solid bg
+          // Predicted menstrual OR extended period = dashed border
           const isPredictedMenstrual = isPredicted && phase === "menstrual";
+          const isDashed = isPredictedMenstrual || isExtended;
 
           return (
             <button
@@ -130,9 +132,9 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
                 isToday ? "ring-2 ring-pearl ring-offset-1 ring-offset-surface" : ""
               } ${isSelected ? "ring-2 ring-dotted ring-pearl/50 ring-offset-1 ring-offset-surface" : ""}`}
               style={{
-                backgroundColor: isPredictedMenstrual ? "transparent" : (phase ? `${phaseColor}20` : undefined),
-                color: isPredicted ? `${phaseColor}80` : phaseColor,
-                border: isPredictedMenstrual ? `2px dashed ${phaseColor}60` : undefined,
+                backgroundColor: isDashed ? "transparent" : (phase ? `${phaseColor}20` : undefined),
+                color: (isPredicted && !isExtended) ? `${phaseColor}80` : phaseColor,
+                border: isDashed ? `2px dashed ${phaseColor}60` : undefined,
                 outline: isSelected ? `2px dashed ${phaseColor || '#e91e8e'}` : undefined,
                 outlineOffset: isSelected ? '2px' : undefined,
                 opacity: isPredicted && phase !== "menstrual" ? 0.5 : 1,
@@ -142,7 +144,7 @@ export function CycleCalendar({ periods, stats, onSelectDate }: CalendarProps) {
               {isToday && (
                 <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-pearl" />
               )}
-              {isPredictedMenstrual && (
+              {isDashed && (
                 <span className="absolute -top-0.5 -right-0.5 text-[7px]">?</span>
               )}
             </button>

@@ -278,9 +278,27 @@ export function DailyInsight({ periods, stats, date, ttcMode }: DailyInsightProp
     ? "Today"
     : new Date(targetDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
-  // Override insight when period is late
+  // Override insight when period is extended or late
   let baseInsight: DayInsight;
-  if (phaseInfo.isLate && phaseInfo.isPredicted) {
+  if (phaseInfo.isExtendedPeriod) {
+    const extraDays = phaseInfo.periodDay - (stats.avgPeriodDuration || 5);
+    baseInsight = {
+      title: `Period day ${phaseInfo.periodDay} (${extraDays} ${extraDays === 1 ? "day" : "days"} longer than usual)`,
+      body: `Your period usually lasts about ${stats.avgPeriodDuration || 5} days. A longer period can happen occasionally due to stress, hormonal changes, or lifestyle shifts. If it lasts more than 8 days or is very heavy, consider talking to your doctor.`,
+      hormones: [
+        { name: "Estrogen", level: "very low", emoji: "💜" },
+        { name: "Progesterone", level: "very low", emoji: "🧡" },
+        { name: "FSH", level: "rising", emoji: "💙" },
+        { name: "LH", level: "low", emoji: "❤️" },
+      ],
+      tips: [
+        "Stay hydrated and eat iron-rich foods",
+        "Has your period ended? Log it to keep your cycle accurate",
+        phaseInfo.periodDay > 8 ? "Periods longer than 8 days — consider mentioning to your doctor" : "A day or two extra is common and usually not a concern",
+        "Gentle movement like walking can help",
+      ],
+    };
+  } else if (phaseInfo.isLate && phaseInfo.isPredicted) {
     baseInsight = {
       title: `Period is ${phaseInfo.daysLate} ${phaseInfo.daysLate === 1 ? "day" : "days"} late`,
       body: "A delay of a few days is completely normal. Stress, travel, changes in routine, sleep, or diet can all shift your cycle. If your period is more than 7 days late, consider taking a pregnancy test or consulting your doctor.",

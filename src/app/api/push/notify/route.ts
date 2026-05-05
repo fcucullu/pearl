@@ -59,14 +59,24 @@ export async function POST() {
 
       let payload: string | null = null;
 
-      if (diffDays === 2) {
+      // Check for ongoing (extended) period
+      const activePeriod = (periods as Period[]).find((p) => p.start_date && !p.end_date);
+      if (activePeriod) {
+        const periodDays = Math.round((todayDate.getTime() - new Date(activePeriod.start_date).getTime()) / 86400000) + 1;
+        if (periodDays > stats.avgPeriodDuration) {
+          payload = JSON.stringify({
+            title: `Period day ${periodDays}`,
+            body: `Your period has been going for ${periodDays} days (your average is ${stats.avgPeriodDuration}). Has it ended? Log it to keep your cycle accurate.`,
+            url: "/track",
+          });
+        }
+      } else if (diffDays === 2) {
         payload = JSON.stringify({
           title: "Period Coming Soon",
           body: "Your period is predicted to start in 2 days. Be prepared!",
           url: "/calendario",
         });
       } else if (diffDays < 0) {
-        // Period is late
         const daysLate = Math.abs(diffDays);
         payload = JSON.stringify({
           title: `Period is ${daysLate} ${daysLate === 1 ? "day" : "days"} late`,

@@ -13,7 +13,7 @@ interface PhaseCardProps {
 }
 
 export function PhaseCard({ phaseInfo }: PhaseCardProps) {
-  const { phase, dayInPhase, totalDaysInPhase, daysUntilNextPeriod, isPredicted, isLate, daysLate } = phaseInfo;
+  const { phase, dayInPhase, totalDaysInPhase, daysUntilNextPeriod, isPredicted, isLate, daysLate, isExtendedPeriod, periodDay } = phaseInfo;
   const color = getPhaseColor(phase);
   const name = getPhaseName(phase);
   const emoji = getPhaseEmoji(phase);
@@ -22,8 +22,19 @@ export function PhaseCard({ phaseInfo }: PhaseCardProps) {
 
   return (
     <div className="bg-surface rounded-2xl p-5 shadow-sm border border-border">
+      {/* Extended period banner */}
+      {isExtendedPeriod && (
+        <div className="mb-3 p-3 rounded-xl text-sm" style={{ backgroundColor: `${color}15`, border: `1px dashed ${color}50` }}>
+          <p className="font-medium" style={{ color }}>
+            Period day {periodDay} — longer than your average ({totalDaysInPhase} days)
+          </p>
+          <p className="text-xs text-muted mt-0.5">
+            Has your period ended? Log it to update your cycle.
+          </p>
+        </div>
+      )}
       {/* Late period banner */}
-      {isLate && isPredicted && phase === "menstrual" && (
+      {isLate && isPredicted && phase === "menstrual" && !isExtendedPeriod && (
         <div className="mb-3 p-3 rounded-xl text-sm" style={{ backgroundColor: `${color}15`, border: `1px dashed ${color}50` }}>
           <p className="font-medium" style={{ color }}>
             Period expected {daysLate} {daysLate === 1 ? "day" : "days"} ago
