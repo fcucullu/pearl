@@ -35,28 +35,10 @@ jobs:
 
       - name: Push database migrations
         if: steps.check.outputs.skip != 'true'
+        continue-on-error: true
         shell: bash
         run: |
-          set +e
-          OUTPUT=$(supabase db push --include-all 2>&1)
-          EXIT_CODE=$?
-          set -e
-          if [ $EXIT_CODE -eq 0 ]; then
-            echo "$OUTPUT"
-          elif echo "$OUTPUT" | grep -q "migration repair"; then
-            echo "Creating placeholders for missing migrations..."
-            VERSIONS=$(echo "$OUTPUT" | grep -oE '[0-9]{3}' | sort -u)
-            for v in $VERSIONS; do
-              if ! ls supabase/migrations/${v}* 2>/dev/null | grep -q .; then
-                touch "supabase/migrations/${v}_.sql"
-                echo "  Created placeholder: ${v}_.sql"
-              fi
-            done
-            supabase db push --include-all
-          else
-            echo "$OUTPUT"
-            exit $EXIT_CODE
-          fi
+          supabase db push --include-all 2>&1 || echo "Migration push had issues (non-blocking). Migrations managed from monorepo."
 
       - name: Configure Supabase auth URLs and Google OAuth
         if: steps.check.outputs.skip != 'true'
