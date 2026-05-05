@@ -222,8 +222,10 @@ export function getPhaseForDate(
   let periodDay = 0;
 
   // Find the period that contains this date (ongoing or confirmed)
+  const today = new Date().toISOString().split("T")[0];
   const activePeriod = sorted.find((p) => {
-    const end = p.end_date || "9999-12-31"; // if no end_date, period is ongoing
+    // For ongoing periods (no end_date), only match up to today
+    const end = p.end_date || today;
     return date >= p.start_date && date <= end;
   });
 
