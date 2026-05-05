@@ -128,24 +128,31 @@ export function getPhaseForDate(
     isPredicted = true;
   }
 
-  // If beyond current cycle: period is late, user hasn't confirmed new cycle
+  // If beyond current cycle: check if period is late
   if (cycleDay >= avgCycleLength) {
-    isPredicted = true;
-    isLate = true;
+    const today = new Date().toISOString().split("T")[0];
     daysLate = cycleDay - avgCycleLength;
-    // Don't wrap — stay as "menstrual" (waiting for period to start)
-    // The period was expected but never confirmed
-    const daysUntilNextPeriodVal = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
-    return {
-      phase: "menstrual" as Phase,
-      dayInPhase: daysLate + 1,
-      totalDaysInPhase: menstrualDays,
-      nextPeriodStart,
-      daysUntilNextPeriod: daysUntilNextPeriodVal,
-      isPredicted: true,
-      isLate: true,
-      daysLate,
-    };
+
+    // Only show as "late menstrual" for days up to and including today
+    // Future days beyond today should show normal predicted phases
+    if (date <= today) {
+      const daysUntilNextPeriodVal = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
+      return {
+        phase: "menstrual" as Phase,
+        dayInPhase: daysLate + 1,
+        totalDaysInPhase: menstrualDays,
+        nextPeriodStart,
+        daysUntilNextPeriod: daysUntilNextPeriodVal,
+        isPredicted: true,
+        isLate: true,
+        daysLate,
+      };
+    }
+
+    // Future days: wrap normally but mark as predicted
+    isPredicted = true;
+    isLate = false;
+    cycleDay = cycleDay % avgCycleLength;
   }
 
   // Check if this date falls within a CONFIRMED period (logged by user)
