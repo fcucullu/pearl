@@ -97,7 +97,10 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
     currentDay = ((rawDaysSinceLastPeriod % cycleLength) + cycleLength) % cycleLength;
   }
 
-  const isLate = rawDaysSinceLastPeriod >= cycleLength;
+  const todayStr = new Date().toISOString().split("T")[0];
+  const selectedStr = selectedDate || todayStr;
+  const isFutureDate = selectedStr > todayStr;
+  const isLate = rawDaysSinceLastPeriod > cycleLength && !isFutureDate;
   const daysLate = isLate ? rawDaysSinceLastPeriod - cycleLength : 0;
 
   // When late, extend the chart to show the extra days
