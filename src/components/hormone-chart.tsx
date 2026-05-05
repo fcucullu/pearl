@@ -100,10 +100,33 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   const isLate = rawDaysSinceLastPeriod >= cycleLength;
   const daysLate = isLate ? rawDaysSinceLastPeriod - cycleLength : 0;
 
-  // When late, clamp the marker to end of cycle (don't wrap)
-  const displayDay = isLate ? cycleLength - 1 : currentDay;
+  // When late, extend the chart to show the extra days
+  const displayLength = isLate ? cycleLength + daysLate + 2 : cycleLength;
+  const displayDay = isLate ? rawDaysSinceLastPeriod : currentDay;
 
-  const curves = useMemo(() => generateHormoneCurves(cycleLength), [cycleLength]);
+  const curves = useMemo(() => {
+    const base = generateHormoneCurves(cycleLength);
+    if (!isLate) return base;
+
+    // Extend curves: luteal hormones continue falling toward baseline
+    const extraDays = daysLate + 2;
+    const lastE = base.estrogen[base.estrogen.length - 1];
+    const lastP = base.progesterone[base.progesterone.length - 1];
+    const lastFsh = base.fsh[base.fsh.length - 1];
+    const lastLh = base.lh[base.lh.length - 1];
+
+    for (let i = 1; i <= extraDays; i++) {
+      const decay = i / extraDays;
+      // Estrogen and progesterone continue falling to very low
+      base.estrogen.push(Math.max(5, lastE * (1 - decay * 0.7)));
+      base.progesterone.push(Math.max(3, lastP * (1 - decay * 0.8)));
+      // FSH starts rising (body trying to trigger new cycle)
+      base.fsh.push(lastFsh + decay * 20);
+      // LH stays low
+      base.lh.push(lastLh);
+    }
+    return base;
+  }, [cycleLength, isLate, daysLate]);
 
   // SVG dimensions
   const width = 360;
@@ -164,16 +187,15 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
     return d;
   }
 
-  // Always compute actual today position — clamp to end when late
+  // Today position uses displayLength for the extended chart
   let actualTodayDay = 0;
   if (lastPeriod) {
     const lastStart = new Date(lastPeriod.start_date);
     const diffMs = new Date().getTime() - lastStart.getTime();
-    const rawToday = Math.floor(diffMs / 86400000);
-    actualTodayDay = rawToday >= cycleLength ? cycleLength - 1 : ((rawToday % cycleLength) + cycleLength) % cycleLength;
+    actualTodayDay = Math.min(Math.floor(diffMs / 86400000), displayLength - 1);
   }
-  const todayX = padLeft + (actualTodayDay / (cycleLength - 1)) * chartW;
-  const selectedX = padLeft + (displayDay / (cycleLength - 1)) * chartW;
+  const todayX = padLeft + (actualTodayDay / (displayLength - 1)) * chartW;
+  const selectedX = padLeft + (displayDay / (displayLength - 1)) * chartW;
   const showSelectedLine = !isToday;
 
   // Phase boundaries for background bands
@@ -182,7 +204,7 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   const ovulationEnd = Math.round(cycleLength * 0.5) + 1;
 
   function dayToX(day: number) {
-    return padLeft + (day / (cycleLength - 1)) * chartW;
+    return padLeft + (day / (displayLength - 1)) * chartW;
   }
 
   const phaseColors = {
@@ -202,14 +224,20 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   return (
     <div className="bg-surface rounded-2xl p-4 shadow-sm border border-border">
       <h3 className="text-sm font-semibold mb-1">Hormone Levels</h3>
-      <p className="text-[10px] text-muted mb-3">Estimated levels based on your {cycleLength}-day cycle</p>
+      <p className="text-[10px] text-muted mb-3">
+        Estimated levels based on your {cycleLength}-day cycle{isLate ? ` (extended +${daysLate} days)` : ""}
+      </p>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="xMidYMid meet">
         {/* Phase background bands */}
         <rect x={dayToX(0)} y={padTop} width={dayToX(periodEnd) - dayToX(0)} height={chartH} fill={phaseColors.menstrual} />
         <rect x={dayToX(periodEnd)} y={padTop} width={dayToX(follicularEnd) - dayToX(periodEnd)} height={chartH} fill={phaseColors.follicular} />
         <rect x={dayToX(follicularEnd)} y={padTop} width={dayToX(ovulationEnd) - dayToX(follicularEnd)} height={chartH} fill={phaseColors.ovulation} />
-        <rect x={dayToX(ovulationEnd)} y={padTop} width={dayToX(cycleLength - 1) - dayToX(ovulationEnd)} height={chartH} fill={phaseColors.luteal} />
+        <rect x={dayToX(ovulationEnd)} y={padTop} width={dayToX(displayLength - 1) - dayToX(ovulationEnd)} height={chartH} fill={phaseColors.luteal} />
+        {/* Extended luteal zone indicator */}
+        {isLate && (
+          <rect x={dayToX(cycleLength - 1)} y={padTop} width={dayToX(displayLength - 1) - dayToX(cycleLength - 1)} height={chartH} fill="rgba(245,166,35,0.06)" stroke="rgba(245,166,35,0.3)" strokeWidth="0.5" strokeDasharray="4 3" />
+        )}
 
         {/* Fertile window highlight (TTC mode) */}
         {ttcMode && (() => {
@@ -264,12 +292,11 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
           {isLate ? `Today (+${daysLate}d late)` : "Today"}
         </text>
 
-        {/* Late period indicator — question mark zone at the start */}
+        {/* Late indicator label */}
         {isLate && (
-          <>
-            <rect x={dayToX(0)} y={padTop} width={dayToX(periodEnd) - dayToX(0)} height={chartH} fill="none" stroke="rgba(232,64,87,0.4)" strokeWidth="1" strokeDasharray="4 3" rx="2" />
-            <text x={(dayToX(0) + dayToX(periodEnd)) / 2} y={padTop + chartH / 2} textAnchor="middle" fontSize="16" fill="rgba(232,64,87,0.3)">?</text>
-          </>
+          <text x={(dayToX(cycleLength - 1) + dayToX(displayLength - 1)) / 2} y={padTop + 12} textAnchor="middle" fontSize="8" fill="rgba(245,166,35,0.7)" fontWeight="500">
+            +{daysLate}d late
+          </text>
         )}
 
         {/* Selected date marker — only when different from today */}
