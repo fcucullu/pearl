@@ -231,7 +231,8 @@ export function getPhaseForDate(
 
   if (activePeriod) {
     periodDay = daysBetween(activePeriod.start_date, date) + 1;
-    if (periodDay > avgPeriodDuration) {
+    const isOngoing = !activePeriod.end_date; // period hasn't been ended by user
+    if (periodDay > avgPeriodDuration && isOngoing) {
       isExtendedPeriod = true;
       // Override phase to menstrual since user is still in their period
       phase = "menstrual";
