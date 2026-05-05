@@ -133,8 +133,28 @@ export function getPhaseForDate(
     const today = new Date().toISOString().split("T")[0];
     daysLate = cycleDay - avgCycleLength;
 
+    // Check if there's a NEXT period logged after cycleStart
+    // If so, we know retrospectively these days were luteal (not menstrual)
+    const nextLoggedPeriod = sorted.find((p) => p.start_date > cycleStart);
+
+    if (nextLoggedPeriod && date < nextLoggedPeriod.start_date) {
+      // We're between the expected period and the actual next period
+      // These days were actually an extended luteal phase
+      const daysUntilNextPeriodVal = daysBetween(date, nextLoggedPeriod.start_date);
+      return {
+        phase: "luteal" as Phase,
+        dayInPhase: cycleDay - avgCycleLength + lutealDays + 1,
+        totalDaysInPhase: lutealDays + daysLate,
+        nextPeriodStart: nextLoggedPeriod.start_date,
+        daysUntilNextPeriod: daysUntilNextPeriodVal,
+        isPredicted: false,
+        isLate: false,
+        daysLate: 0,
+      };
+    }
+
+    // No next period logged — period is genuinely late
     // Only show as "late menstrual" for days up to and including today
-    // Future days beyond today should show normal predicted phases
     if (date <= today) {
       const daysUntilNextPeriodVal = nextPeriodStart ? daysBetween(date, nextPeriodStart) : null;
       return {
