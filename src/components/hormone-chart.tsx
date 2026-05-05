@@ -201,6 +201,10 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   const selectedX = padLeft + (displayDay / (displayLength - 1)) * chartW;
   const showSelectedLine = !isToday;
 
+  // Hide today marker if selected date is in a different cycle
+  const selectedInSameCycle = rawDaysSinceLastPeriod >= 0 && rawDaysSinceLastPeriod < displayLength;
+  const showTodayLine = selectedInSameCycle || isToday;
+
   // Phase boundaries for background bands
   const periodEnd = Math.round(stats.avgPeriodDuration || 5);
   const follicularEnd = Math.round(cycleLength * 0.5) - 2;
@@ -279,21 +283,25 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
           />
         ))}
 
-        {/* Today marker — always visible */}
-        <line
-          x1={todayX}
-          y1={padTop}
-          x2={todayX}
-          y2={padTop + chartH}
-          stroke={COLORS.today}
-          strokeWidth={showSelectedLine ? "1" : "1.5"}
-          strokeDasharray="4 3"
-          opacity={showSelectedLine ? "0.4" : "0.8"}
-        />
-        <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} opacity={showSelectedLine ? 0.4 : 1} />
-        <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="9" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
-          {isLate ? `Today (+${daysLate}d late)` : "Today"}
-        </text>
+        {/* Today marker — only when viewing the current cycle */}
+        {showTodayLine && (
+          <>
+            <line
+              x1={todayX}
+              y1={padTop}
+              x2={todayX}
+              y2={padTop + chartH}
+              stroke={COLORS.today}
+              strokeWidth={showSelectedLine ? "1" : "1.5"}
+              strokeDasharray="4 3"
+              opacity={showSelectedLine ? "0.4" : "0.8"}
+            />
+            <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} opacity={showSelectedLine ? 0.4 : 1} />
+            <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="9" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
+              {isLate ? `Today (+${daysLate}d late)` : "Today"}
+            </text>
+          </>
+        )}
 
         {/* Late indicator label */}
         {isLate && (
