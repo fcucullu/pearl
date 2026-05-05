@@ -205,10 +205,13 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   const selectedInSameCycle = rawDaysSinceLastPeriod >= 0 && rawDaysSinceLastPeriod < displayLength;
   const showTodayLine = selectedInSameCycle || isToday;
 
-  // Phase boundaries for background bands
-  const periodEnd = Math.round(stats.avgPeriodDuration || 5);
-  const follicularEnd = Math.round(cycleLength * 0.5) - 2;
-  const ovulationEnd = Math.round(cycleLength * 0.5) + 1;
+  // Phase boundaries — must match cycle.ts logic exactly
+  const avgPeriodDuration = stats.avgPeriodDuration || 5;
+  const periodEnd = Math.round(avgPeriodDuration);
+  const ovulationDay = Math.round(cycleLength / 2) - 1;
+  const ovulationDays = 3;
+  const follicularEnd = ovulationDay; // follicular: periodEnd to ovulationDay
+  const ovulationEnd = ovulationDay + ovulationDays; // ovulation: ovulationDay to ovulationDay+3
 
   function dayToX(day: number) {
     return padLeft + (day / (displayLength - 1)) * chartW;
@@ -248,7 +251,7 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
 
         {/* Fertile window highlight (TTC mode) */}
         {ttcMode && (() => {
-          const ovDay = Math.round(cycleLength * 0.5);
+          const ovDay = ovulationDay;
           const fertileStart = Math.max(0, ovDay - 2);
           const fertileEnd = Math.min(cycleLength - 1, ovDay + 2);
           const x1 = dayToX(fertileStart);
