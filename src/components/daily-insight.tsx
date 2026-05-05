@@ -278,8 +278,29 @@ export function DailyInsight({ periods, stats, date, ttcMode }: DailyInsightProp
     ? "Today"
     : new Date(targetDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
-  const baseInsight = getDayInsight(dayInCycle, cycleLength, phaseInfo.phase);
-  const ttcOverride = ttcMode ? getTTCInsightForDay(dayInCycle, cycleLength, phaseInfo.phase) : null;
+  // Override insight when period is late
+  let baseInsight: DayInsight;
+  if (phaseInfo.isLate && phaseInfo.isPredicted) {
+    baseInsight = {
+      title: `Period is ${phaseInfo.daysLate} ${phaseInfo.daysLate === 1 ? "day" : "days"} late`,
+      body: "A delay of a few days is completely normal. Stress, travel, changes in routine, sleep, or diet can all shift your cycle. If your period is more than 7 days late, consider taking a pregnancy test or consulting your doctor.",
+      hormones: [
+        { name: "Estrogen", level: "falling", emoji: "💜" },
+        { name: "Progesterone", level: "falling", emoji: "🧡" },
+        { name: "FSH", level: "rising", emoji: "💙" },
+        { name: "LH", level: "low", emoji: "❤️" },
+      ],
+      tips: [
+        "Don't worry — small delays are very common",
+        "Track any symptoms (cramps, spotting, mood changes)",
+        "Log your period as soon as it starts to keep your cycle accurate",
+        phaseInfo.daysLate >= 7 ? "Consider a pregnancy test if sexually active" : "Reduce stress and prioritize sleep",
+      ],
+    };
+  } else {
+    baseInsight = getDayInsight(dayInCycle, cycleLength, phaseInfo.phase);
+  }
+  const ttcOverride = ttcMode && !phaseInfo.isLate ? getTTCInsightForDay(dayInCycle, cycleLength, phaseInfo.phase) : null;
   const insight = {
     ...baseInsight,
     ...(ttcOverride ?? {}),

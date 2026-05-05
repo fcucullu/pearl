@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import type { CycleStats, Period } from "@/lib/cycle";
+import { getPhaseForDate } from "@/lib/cycle";
 
 const COLORS = {
   estrogen: "#8b5cf6",    // purple
@@ -88,11 +89,19 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
   const lastPeriod = sorted[sorted.length - 1];
 
   let currentDay = 0;
+  let rawDaysSinceLastPeriod = 0;
   if (lastPeriod) {
     const lastStart = new Date(lastPeriod.start_date);
     const diffMs = targetDate.getTime() - lastStart.getTime();
-    currentDay = ((Math.floor(diffMs / 86400000) % cycleLength) + cycleLength) % cycleLength;
+    rawDaysSinceLastPeriod = Math.floor(diffMs / 86400000);
+    currentDay = ((rawDaysSinceLastPeriod % cycleLength) + cycleLength) % cycleLength;
   }
+
+  const isLate = rawDaysSinceLastPeriod >= cycleLength;
+  const daysLate = isLate ? rawDaysSinceLastPeriod - cycleLength : 0;
+
+  // When late, clamp the marker to end of cycle (don't wrap)
+  const displayDay = isLate ? cycleLength - 1 : currentDay;
 
   const curves = useMemo(() => generateHormoneCurves(cycleLength), [cycleLength]);
 
@@ -155,15 +164,16 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
     return d;
   }
 
-  // Always compute actual today position
+  // Always compute actual today position — clamp to end when late
   let actualTodayDay = 0;
   if (lastPeriod) {
     const lastStart = new Date(lastPeriod.start_date);
     const diffMs = new Date().getTime() - lastStart.getTime();
-    actualTodayDay = ((Math.floor(diffMs / 86400000) % cycleLength) + cycleLength) % cycleLength;
+    const rawToday = Math.floor(diffMs / 86400000);
+    actualTodayDay = rawToday >= cycleLength ? cycleLength - 1 : ((rawToday % cycleLength) + cycleLength) % cycleLength;
   }
   const todayX = padLeft + (actualTodayDay / (cycleLength - 1)) * chartW;
-  const selectedX = padLeft + (currentDay / (cycleLength - 1)) * chartW;
+  const selectedX = padLeft + (displayDay / (cycleLength - 1)) * chartW;
   const showSelectedLine = !isToday;
 
   // Phase boundaries for background bands
@@ -251,8 +261,16 @@ export function HormoneChart({ periods, stats, selectedDate, ttcMode }: HormoneC
         />
         <circle cx={todayX} cy={padTop - 3} r="3" fill={COLORS.today} opacity={showSelectedLine ? 0.4 : 1} />
         <text x={todayX} y={padTop + chartH + 12} textAnchor="middle" fontSize="9" fill={COLORS.today} fontWeight="600" opacity={showSelectedLine ? 0.5 : 1}>
-          Today
+          {isLate ? `Today (+${daysLate}d late)` : "Today"}
         </text>
+
+        {/* Late period indicator — question mark zone at the start */}
+        {isLate && (
+          <>
+            <rect x={dayToX(0)} y={padTop} width={dayToX(periodEnd) - dayToX(0)} height={chartH} fill="none" stroke="rgba(232,64,87,0.4)" strokeWidth="1" strokeDasharray="4 3" rx="2" />
+            <text x={(dayToX(0) + dayToX(periodEnd)) / 2} y={padTop + chartH / 2} textAnchor="middle" fontSize="16" fill="rgba(232,64,87,0.3)">?</text>
+          </>
+        )}
 
         {/* Selected date marker — only when different from today */}
         {showSelectedLine && (

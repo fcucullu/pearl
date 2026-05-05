@@ -57,13 +57,25 @@ export async function POST() {
       const diffMs = nextDate.getTime() - todayDate.getTime();
       const diffDays = Math.round(diffMs / 86400000);
 
+      let payload: string | null = null;
+
       if (diffDays === 2) {
-        const payload = JSON.stringify({
+        payload = JSON.stringify({
           title: "Period Coming Soon",
           body: "Your period is predicted to start in 2 days. Be prepared!",
           url: "/calendario",
         });
+      } else if (diffDays < 0) {
+        // Period is late
+        const daysLate = Math.abs(diffDays);
+        payload = JSON.stringify({
+          title: `Period is ${daysLate} ${daysLate === 1 ? "day" : "days"} late`,
+          body: "Has your period started? Log it to keep your cycle tracking accurate.",
+          url: "/track",
+        });
+      }
 
+      if (payload) {
         for (const sub of subs) {
           try {
             await webPush.sendNotification(
@@ -75,7 +87,6 @@ export async function POST() {
             );
             notified++;
           } catch (err: unknown) {
-            // Remove invalid subscriptions (gone/expired)
             const statusCode = (err as { statusCode?: number })?.statusCode;
             if (statusCode === 404 || statusCode === 410) {
               await supabase
