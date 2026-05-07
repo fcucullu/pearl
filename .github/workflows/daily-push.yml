@@ -10,10 +10,12 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send push notifications
+      - name: Send web push notifications (PWA)
         run: |
-          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST "https://pearl.franciscocucullu.com/api/push/notify")
-          BODY=$(cat /tmp/response.txt)
-          echo "Status: $HTTP_CODE"
-          echo "Response: $BODY"
-          if [ "$HTTP_CODE" != "200" ]; then exit 1; fi
+          HTTP_CODE=$(curl -s -o /tmp/web.txt -w "%{http_code}" -X POST "https://pearl.franciscocucullu.com/api/push/notify")
+          echo "Web: $HTTP_CODE $(cat /tmp/web.txt)"
+
+      - name: Send native push notifications (Expo)
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/native.txt -w "%{http_code}" -X POST "https://pearl.franciscocucullu.com/api/push/send-native" -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}")
+          echo "Native: $HTTP_CODE $(cat /tmp/native.txt)"

@@ -300,7 +300,7 @@ export function DailyInsight({ periods, stats, date, ttcMode }: DailyInsightProp
     };
   } else if (phaseInfo.isLate && phaseInfo.isPredicted) {
     baseInsight = {
-      title: `Period is ${phaseInfo.daysLate} ${phaseInfo.daysLate === 1 ? "day" : "days"} late`,
+      title: phaseInfo.daysLate === 0 ? "Period expected today" : `Period is ${phaseInfo.daysLate} ${phaseInfo.daysLate === 1 ? "day" : "days"} late`,
       body: "A delay of a few days is completely normal. Stress, travel, changes in routine, sleep, or diet can all shift your cycle. If your period is more than 7 days late, consider taking a pregnancy test or consulting your doctor.",
       hormones: [
         { name: "Estrogen", level: "falling", emoji: "💜" },
