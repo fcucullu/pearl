@@ -48,17 +48,17 @@ export async function POST(req: NextRequest) {
   // Get all users with Expo push tokens
   const { data: tokens } = await supabase
     .from("pearl_expo_push_tokens")
-    .select("user_id, token");
+    .select("user_id, token, locale");
 
   if (!tokens?.length) {
     return NextResponse.json({ checked: 0, sent: 0 });
   }
 
   // Group tokens by user
-  const userTokens = new Map<string, string[]>();
+  const userTokens = new Map<string, { token: string; locale: string }[]>();
   for (const t of tokens) {
     const existing = userTokens.get(t.user_id) ?? [];
-    existing.push(t.token);
+    existing.push({ token: t.token, locale: t.locale || "en" });
     userTokens.set(t.user_id, existing);
   }
 
@@ -180,11 +180,33 @@ export async function POST(req: NextRequest) {
     }
 
     if (title && body) {
-      for (const token of tokensForUser) {
+      for (const { token, locale } of tokensForUser) {
+        // Translate if Spanish
+        let localTitle = title;
+        let localBody = body;
+        if (locale === "es") {
+          // Phase names
+          localTitle = localTitle
+            .replace("Menstrual Phase", "Fase Menstrual")
+            .replace("Follicular Phase", "Fase Folicular")
+            .replace("Ovulation Phase", "Fase de Ovulacion")
+            .replace("Luteal Phase", "Fase Lutea")
+            .replace("Period Coming Soon", "Tu periodo se acerca")
+            .replace(/Period is (\d+) days? late/, "Tu periodo lleva $1 dias de retraso")
+            .replace(/Period day (\d+)/, "Dia $1 de periodo");
+          localBody = localBody
+            .replace("Your period is starting. Take it easy and prioritize rest.", "Tu periodo esta comenzando. Tomate las cosas con calma y prioriza el descanso.")
+            .replace("Energy is rising! Great time for new projects and challenges.", "Tu energia esta subiendo! Buen momento para nuevos proyectos.")
+            .replace("Peak energy and confidence. You're glowing!", "Energia y confianza al maximo. Estas radiante!")
+            .replace("Time to wind down. Be gentle with yourself.", "Momento de desacelerar. Se amable contigo misma.")
+            .replace("Your period is predicted to start in 2 days. Be prepared!", "Se predice que tu periodo comenzara en 2 dias. Preparate!")
+            .replace("Has your period started? Log it to keep your cycle tracking accurate.", "Ya comenzo tu periodo? Registralo para mantener tu ciclo preciso.")
+            .replace(/Your period has been going for (\d+) days \(your average is (\d+)\)\. Has it ended\?/, "Tu periodo lleva $1 dias (tu promedio es $2). Ya termino?");
+        }
         messages.push({
           to: token,
-          title,
-          body,
+          title: localTitle,
+          body: localBody,
           sound: "default",
           priority: "high",
           data: { screen: "calendario" },
