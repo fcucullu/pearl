@@ -5,6 +5,7 @@ import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://pearl.franciscocucullu.com"),
   title: "Pearl",
   description: "Period & cycle tracker — know your body, feel your best",
   manifest: "/manifest.json",
